@@ -55,7 +55,7 @@ glimpse(wv_ppp_loans)
 ## Answer questions
 
 **Q2** Which West Virginia county got the most loans? How many?
-**A2** [Kanawha County recieved 4332 loans.]
+**A2** [Kanawha County received 4332 loans.]
 
 ```{r}
 # Write the code to produce your answer here
@@ -83,22 +83,23 @@ wv_ppp_loans %>%
 
 
 **Q5** What West Virginia business got the state's largest PPP loan? How much was it for? What does the business do? How many jobs did the loan retain, according to the data?
-**A5** [write your answer here]
+**A5** [Greenbriar Hotel Corporation received a loan of $8,912,202, and retained 500 jobs. The business is a resort in West Virginia.]
 
 ```{r}
 # Write the code to produce your answer here
 
+# which business received the largest PPP loan
 wv_ppp_loans %>%
   group_by(name) %>%
   summarise(
-    count_loans = n()
+    amount, jobs_retained
   ) %>%
-  arrange(desc(count_loans))
+  arrange(desc(amount))
 
 ```
 
 **Q6** What West Virginia politician (with his family) owns the company identified in question 2? What's your source for that information? Hint: this will require web research, you won't be able to answer this purely from the data set.  You do not need to write any code for this question, so no codeblock is provided.  
-**A6** [write your answer here]
+**A6** [Jim Justice, the governor of the state, owns Greenbriar Hotel Corporation.]
 
 **Q7**. Produce a summary table that has the following information for West Virginia as a whole (the whole state, not by county):
 * count of loans
@@ -110,9 +111,33 @@ wv_ppp_loans %>%
 
 Store it as a variable object called `wv_summary` so that you can examine it with the data viewer. What newsworthy nuggets jump out at you that you could imagine dropping into a news story? Write a few summary sentences with overall findings. 
 
-**A7** [write your answer here]
+**A7** [West Virginia businesses received over 2.6 billion in PPP loans. There were 33,703 loans administered, with the median loan being $20,832. The average loan amount was 77,338, indicating that there were loans of high amounts pulling the average up.]
 ```{r}
 # Write the code to produce your answer here
+
+#create summary table
+wv_ppp_loans %>%
+  summarise(
+    count_loans = n(),
+    total_loans_amount = sum(amount),
+    mean_loan_amount = mean(amount),
+    median_loan_amount = median(amount),
+    min_loan_amount = min(amount),
+    max_loan_amount = max(amount)
+  ) 
+
+#create object
+
+wv_summary <- wv_ppp_loans %>%
+  summarise(
+    count_loans = n(),
+    total_loans_amount = sum(amount),
+    mean_loan_amount = mean(amount),
+    median_loan_amount = median(amount),
+    min_loan_amount = min(amount),
+    max_loan_amount = max(amount)
+  ) 
+
 ```
 
 **Q8** Produce a summary table that has the following information for each West Virginia county:
@@ -127,7 +152,36 @@ Store it as a variable object called `wv_county_summary` so that you can examine
 
 What newsworthy nuggets or patterns jump out at you that you could imagine dropping into a news story or doing follow up reporting on? Write up a few sentence that summarizes one county. 
 
-**A8** [write your answer here]
+**A8** [Kanawha County received the most loans in total and the highest loan amount, with over 420 million dollars worth of loans. The largest loan went to a Greenbrier County business at $8,912,202.]
 ```{r}
 # Write the code to produce your answer here
+
+# creating table
+wv_ppp_loans %>%
+  group_by(project_county_name) %>%
+  summarise(
+    count_loans = n(),
+    total_loans_amount = sum(amount),
+    mean_loan_amount = mean(amount),
+    median_loan_amount = median(amount),
+    min_loan_amount = min(amount),
+    max_loan_amount = max(amount)
+  ) %>%
+  arrange(desc(max_loan_amount))
+
+
+#making object 
+wv_county_summary <- wv_ppp_loans %>%
+  group_by(project_county_name) %>%
+  summarise(
+    count_loans = n(),
+    total_loans_amount = sum(amount),
+    mean_loan_amount = mean(amount),
+    median_loan_amount = median(amount),
+    min_loan_amount = min(amount),
+    max_loan_amount = max(amount)
+  ) %>%
+  arrange(desc(count_loans))
+
+
 ```
