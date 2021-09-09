@@ -1,7 +1,7 @@
 ---
 title: "lab_02"
-author: "derek willis"
-date: "8/24/2021"
+author: "Shreya Vuttaluru"
+date: "9/9/2021"
 output: html_document
 ---
 
@@ -47,10 +47,24 @@ west_virginia_ppp <- read_rds("lab_02.rds")
 ## Answer questions
 
 **Q1** Create a new column that divides the loan amounts into multiple options: under_10k, 10k_50k, 50k_100k, 100k_500k, 500k_1m, 1m_plus. How many loans are in each group? You will need to use `case_when` to make this work and there's an example of this in the book chapter on mutate.
-**A1** [write your answer here]
+**A1** [There were 9,310 loans under 10k, 15, 372 loans ]
 
 ```{r}
 # Write the code to produce your answer here
+wv_loan_divide <- west_virginia_ppp %>%
+  mutate(
+    loan_bracket = case_when(
+        amount < 10000 ~ "under_10k",
+        amount >= 10000 & amount < 50000 ~ "10k_50k",
+        amount >= 50000 & amount < 100000 ~ "50k_100k",
+        amount >= 100000 & amount < 500000 ~ "100k_500k",
+        amount >= 500000 & amount < 1000000 ~ "500k_1m",
+        amount > 1000000 ~ "1m_plus"
+      )
+
+  ) %>%
+  group_by(loan_bracket)  %>%
+  summarise(total = n())
 
 ```
 
