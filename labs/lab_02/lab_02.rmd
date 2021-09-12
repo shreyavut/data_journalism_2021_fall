@@ -47,7 +47,7 @@ west_virginia_ppp <- read_rds("lab_02.rds")
 ## Answer questions
 
 **Q1** Create a new column that divides the loan amounts into multiple options: under_10k, 10k_50k, 50k_100k, 100k_500k, 500k_1m, 1m_plus. How many loans are in each group? You will need to use `case_when` to make this work and there's an example of this in the book chapter on mutate.
-**A1** [There were 9,310 loans under 10k, 15, 372 loans ]
+**A1** [There were 9,310 loans under 10k dollars, 15,372 loans between 10k dollars and 50k dollars, 3,978 loans between 50k dollars and 100k dollars, 4,152 loans between 100k dollars and 500k dollars, 540 loans between 500k dollars and 1 million dollars, and 356 loans that were over 1 million dollars.]
 
 ```{r}
 # Write the code to produce your answer here
@@ -69,20 +69,37 @@ wv_loan_divide <- west_virginia_ppp %>%
 ```
 
 **Q2** Which servicing lenders have the most loans with undisbursed amounts greater than 0?
-**A2** [write your answer here]
+**A2** [Harvest Small Business Finance, LLC, had 139 loans with undisbursed amounts greater than 0, more than any other servicing lender.]
 
 ```{r}
 # Write the code to produce your answer here
+
+west_virginia_ppp %>% 
+  mutate(
+    undisb_morethan_zero = if_else(
+      undisbursed_amount > 0, "Yes", "No"
+      )
+  ) %>% filter(undisb_morethan_zero == "Yes") %>%
+        group_by(servicing_lender_name) %>% 
+        summarize(
+          count_undibloans = n()
+        ) %>%
+        arrange(desc(count_undibloans))
+      
 
 ```
 
 **Q3** How would you describe the top 10 list of those lenders? What do they have in common or not? (You may want to look up some of the top ones.)
-**A3** [write your answer here]
+**A3** [I noticed that many of the lenders in the top 10 explicitly advertise that they help with PPP loans. Most of them deal with mortgages and finances, but a few of them are also banks. Some of them are also aimed at helping small businesses in particular. Overall, the lenders are situated in different areas of the U.S., and there doesn't seem to be a correlation with location.]
 
 **Q4** Which month in 2021 had the most loans approved?
-**A4** [write your answer here]
+**A4** [March 2021 had the most loans approved, with 4,404 loans.]
 
 ```{r}
 # Write the code to produce your answer here
-
+west_virginia_ppp %>%
+  mutate(Month = floor_date(date_approved, "month")) %>%
+  group_by(Month) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total))
 ```
