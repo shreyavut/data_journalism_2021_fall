@@ -120,7 +120,7 @@ Q3: Five business entities owned by the spouse of a member of West Virginia's U.
   * What do the businesses do?
   * How much money did the five businesses receive in total?
   * What percentage of the total loan amount have been forgiven?
-  * How did the U.S. House member vote on the legislation initially author zing the PPP loan program.
+  * How did the U.S. House member vote on the legislation initially authorizing the PPP loan program.
 
 Feel free to add any interesting "color" (little interesting details) you find in your research.  
 
@@ -136,6 +136,7 @@ Some hints to help you answer this question:
 * This is a link to details on passage of the [CARES ACT](https://www.congress.gov/bill/116th-congress/house-bill/748). You can find a link to how the House voted by clicking on a link from [this page](https://www.congress.gov/bill/116th-congress/house-bill/748/actions).
 
 A3:
+The businesses are DM Motor, Dutch Miller of Charleston, Dutch Miller of Charlotte, Dutch Miller Subaru, and Dutch Miller Chevrolet. Clearly, they are all auto dealerships. In total, all 5 companies received $3,105,300	in loans, of which 101.1326 percent was forgiven because of interest. Carol Miller, the representative in Congress and the wife of the owner of these businesses voted yes on the CARES Act.  
 
 ```{r}
 
@@ -143,7 +144,26 @@ A3:
 # First, create a dataframe that only has loans to those five companies
 # Second, use that newly created dataframe to calculate total loan amount and percentage forgiven for those companies
 
-wv_ppp_loans %/%
-  mutate(name = str_detect(city,"^St") ~ "Saint Albans",)
+#this creates the 5 companies
+miller_loans <- wv_ppp_loans %>% 
+    filter(str_detect(name, "DUTCH MILLER|DM MOTOR")) %>% 
+    summarise(name, amount, forgiveness_amount)
+
+
+#now do the other 
+miller_loans %>%
+mutate(percent_forgive = forgiveness_amount/amount * 100)  %>%
+summarise(forgiveness_amount, name, amount) %>%
+  group_by(name)
+
+
+#this should create the total percentage although not in the way I anticipated
+#not efficient but gives me aggregates I guess. 
+miller_loans %>%
+      mutate(total_amount = sum(amount),
+      total_forgive = sum(forgiveness_amount),
+      percent_total = total_forgive/total_amount * 100) %>%
+    group_by(amount)
+
 
 ```
