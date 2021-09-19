@@ -150,7 +150,7 @@ miller_loans <- wv_ppp_loans %>%
     summarise(name, amount, forgiveness_amount)
 
 
-#now do the other 
+#now do the other (this gives each individual loan)
 miller_loans %>%
 mutate(percent_forgive = forgiveness_amount/amount * 100)  %>%
 summarise(forgiveness_amount, name, amount) %>%
