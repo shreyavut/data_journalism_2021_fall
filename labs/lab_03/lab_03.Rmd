@@ -83,7 +83,8 @@ Q2: What is the name of the business that got the largest loan (by dollar value)
 * How much was the business' loan for?
 * How much of that loan was forgiven?
 * Which number is bigger, the loan amount or the forgiveness amount? Can you explain the discrepancy?
-The forgiveness amount is larger than what was given, because of thw 1 percent interest. 
+
+This ZIP code is located in Kanawha County. The forgiveness amount is larger than what was given, because of the program offers loans at a 1 percent interest rate, so the interest was also refunded. 
 
 A2: 
 
