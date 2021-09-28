@@ -1,6 +1,6 @@
 ---
 title: "pre_lab_05.Rmd"
-author: "sean mussenden"
+author: "not sean mussenden"
 date: "8/24/2021"
 output: html_document
 ---
@@ -49,6 +49,7 @@ md_loans
 ### Task 4: Group and count to identify problems in city column
 **Task** Run the following code to group and count records in the city column, and filter to examine only cities that start with A. Name a problem that you see that is preventing proper grouping.
 **Answer**
+There are spelling errors and capitalization discrepancies with the city of Aberdeen.
 
 ```{r}
 # Now let's try and group and count the number of loans by city. To make it a bit more managable, let's use another string function from `stringr` and filter for cities that start with the uppercase "A" or lowercase "a" using the function `str_detect()` with a regular expression.  
