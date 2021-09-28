@@ -36,6 +36,7 @@ library(refinr)
 ### Task 3: Load data
 **Task** Run the following code to load the zipped-up Maryland PPP loans data. How many records are in this table?
 **Answer**
+195,865
 
 ```{r}
 # Load data
@@ -68,6 +69,7 @@ md_loans %>%
 ### Task 5: Use refinr to clean the city_clean field. 
 **Task** Run the following code to make a copy of the city field called city_clean, then use the `key_collision_merge` function from refinr to attempt to standarize similar values. Store it as a new object called clean_md_loans.  Click the black arrow on the table to examine the city and city_clean columns.  Looking at the results on the first page only (first 10 rows), name two changes the refinr package made, by comparing city to city_clean.
 **Answer**
+The capitalization discrepancies have been fixed--now mostly everything is in title case, meaning that the first letter is capitalized while the rest are not. Some records were previously totally capitalized, not capitalized at all, or capitalized in improper spots. 
 
 ```{r}
 cleaned_md_loans <- md_loans %>%
@@ -81,6 +83,7 @@ cleaned_md_loans
 ### Task 6: Filter cleaned_md_loans to examine cities that start with A 
 **Task** Run the following code to group by city_clean and city, then filter for cities that start with A. Name three changes the refinr function made.  
 **Answer**
+Again, the case discrepancies have been resolved, for the most part, but there are a few errors in spelling. Annapolis Junction was capitalized at the beginning in some records, Abell was uncapitalized in the record that was all-caps, and the lowercase Abingdon record was also capitalized at the beginning. 
 
 ```{r}
 cleaned_md_loans %>%
@@ -94,6 +97,7 @@ cleaned_md_loans %>%
 ### Task 7: Use a different refinr method to clean the city_clean field. 
 **Task** Run the following code to use the n_gram_merge() function to clean the data, then group by city_clean and city to examine cities that start with A. Look at the differences. Does the changes it made vary substantially from the previous use of key_collision_merge?
 **Answer**
+There does not seem to be that much of a substantial change. Some of the case issues were further resolved, but there are still issues with spelling. 
 
 ```{r}
 cleaned_md_loans <- md_loans %>%
