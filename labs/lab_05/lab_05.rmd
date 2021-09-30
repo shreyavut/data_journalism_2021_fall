@@ -199,4 +199,17 @@ My first hypothesis is that restaurants were badly affected by the pandemic, sin
 
 Hint: you will not find the answers to the last three questions in the data.  You could call them directly to get that information, but I don't want you to do that for this assignment.  Instead, do some web research. I would start by Googling the company name from the data and looking at the page that comes up for the business from at http://apps.sos.wv.gov/. I would use information I found on that page and use info about the company from Google, the [Wayback machine](https://archive.org/web/) (which lets you look at older versions of a company's website), Yelp, and Facebook. 
 
+```{r}
+
+berkeley_naics %>% 
+  filter(city == "Martinsburg" &
+         title == "Full-Service Restaurants") %>% 
+  group_by(name, amount, jobs_retained) %>% 
+  arrange(desc(amount))
+
+
+```
+
 **A5.**
+
+The name of this restaurant is Kitzie's Cafe, and it's owned by Christi Cottle. Customers know it as Kitzie's Cafe. The loan amount was $280434. The loan was approved on 2/7/2021, and retained 94 jobs. There were three locations. One location closed before the pandemic. 
