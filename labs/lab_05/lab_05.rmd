@@ -1,6 +1,6 @@
 ---
 title: "lab_05"
-author: "Sean Mussenden"
+author: "not Sean Mussenden"
 date: "8/24/2021"
 output: html_document
 ---
@@ -28,6 +28,8 @@ You'll need to load two packages for this: the tidyverse and janitor.
 ```{r}
 # Turn off scientific notation
 options(scipen=999)
+library(tidyverse)
+library(janitor)
 
 ```
 
@@ -40,6 +42,16 @@ You'll need to load three data sets for this:
 * A table of West Virginia population by county (American Community Survey, 2019 5-year averages) (wv_population_county.csv).
 
 All three data sets are in the data folder.  Write code to load the three in the codeblock below.
+
+```{r}
+
+#loading data here
+
+naics_codes <- md_loans <- read_csv("data/naics_codes.csv")
+wv_pop <- read_csv("data/wv_population_county.csv")
+wv_ppp_loans <- read_rds("data/lab_05.rds")
+
+```
 
 **Task** Create a codeblock below this task, then read the data sets in in and assign them to appropriate variable names. There's a fourth data set you'll use in this lab, too, of selected loans in ZIP Code 25401. But there's no need to load it now.
 
@@ -65,6 +77,12 @@ Then answer these questions:
 **A1.**
 
 ```{r}
+
+
+
+
+
+
 
 ```
 
