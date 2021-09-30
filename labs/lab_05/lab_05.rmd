@@ -75,13 +75,36 @@ Then answer these questions:
 * What are the names of the businesses at that address?
 
 **A1.**
+1) The street address with the most loans is 126 E Burke St. 
+2) There are 6 loans at that street address
+3) The businesses at this address are Drew Holdings LLC, Brix27, Abraham Ashton, Hub Co-op, and Ronin Properties. 
 
 ```{r}
 
 
+# data be exported
+cleaned_25401 <- read_csv("data/zip_25401_clean.csv")
+
+# lovely
+
+cleaned_25401 %>%
+  group_by(clean_address) %>%
+  summarise(
+    count=n()
+  ) %>%
+    arrange(desc(count))
 
 
+# finding names 
 
+cleaned_25401 %>%
+  filter(clean_address == "126 E Burke St") %>%
+  group_by(name)
+
+# bet
+
+
+  
 
 
 ```
@@ -94,6 +117,10 @@ Based on your research, does it seem suspicious that this collection of business
 
 **A2.**
 
+All of these companies are managed by the same lawyer, Abraham Ashton, and by the same agent, Rober Johnson. The Hub Co-op is a coworking space. I would assume that all of these companies are using the coworking space an address for their loans, so I wouldn't immediately find it suspicious. However, it is a little weird that lawyer is using a coworking space as an address, and that all the companies are managed by the same person. 
+
+
+
 **Q3.** Start by using the West Virginia slice of the PPP loan data that you loaded at the start of the lab to create a subset of PPP loans in West Virginia's second largest county (which you can find in wv_population_county). And then use that table you created to answer the following questions:
 
 * Which city in that county had the highest number of loans? 
@@ -105,13 +132,61 @@ Guidance: there are a lot of steps you'll need to take to answer this question. 
 
 **A3.**
 
+Martinsburg had the highest amount of loans. 
+
 ```{r}
+
+# finding second largest county 
+wv_pop %>% 
+  group_by(population_2019) %>% 
+  arrange(desc(population_2019))
+
+# Berkeley county is the second most populated
+ 
+berkeley_loans <- wv_ppp_loans %>% 
+  filter(project_county_name == "BERKELEY") 
+
+## %>% 
+ # group_by(city) %>% 
+  # summarise(
+   # count=n()
+ # ) %>%
+ #   arrange(desc(count))
+
+#saving as csv
+write_csv(x=berkeley_loans, "data/berkeley_loans.csv")
+
+# ok now count
+clean_berkeley_loans <- read_csv("data/clean_berkeley_loans.csv")
+
+clean_berkeley_loans %>% 
+  group_by(city) %>% 
+  summarise(
+  count=n() 
+  ) %>%
+  arrange(desc(count))
+
+# Martinsburg has the highest amount of loans! 
+
+# join join join
+
+berkeley_naics <- clean_berkeley_loans %>% left_join(naics_codes, by=c("naics_code")) 
+
+berkeley_naics %>% 
+  filter(city == "Martinsburg") %>% 
+  group_by(title) %>% 
+  summarise(
+  count=n() 
+  ) %>%
+  arrange(desc(count))
 
 ```
 
 **Q4.** What are your two best hypotheses, which you'd need to confirm with reporting and further analysis, that explain why that industry is at the top of the list?
 
 **A4.** 
+
+My first hypothesis is that restaurants were badly affected by the pandemic, since nobody was going out, so therefore many of them probably applied for loans. The restaurant industry in general is also fairly large, so therefore it makes sense that full service restaurants are the top recipients of loans. 
 
 **Q5.** Start with a table of loans to all businesses in the city and industry that answered question 3. Answer the following questions:
 * What is the name of the business that got the highest approved loan amount? 
