@@ -1,6 +1,6 @@
 ---
 title: "Reverse Engineering Project"
-author: "Student names here"
+author: "Shreya, Kylie, and Michael"
 date: "Date here"
 output:
   html_document:
@@ -26,6 +26,13 @@ Loading required libraries for this analysis.
 
 ```{r echo=FALSE, message=FALSE}
 
+library(tidyverse)
+library(lubridate)
+
+install.packages("readxl")
+
+library(readxl)
+
 ```
 
 ## Load and Cleaning Data
@@ -39,6 +46,9 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
+allegations <- read_csv("data/CCRB-Complaint-Data_202007271729/allegations_202007271729.csv")
+allegation_description <- read_excel("data/CCRB-Complaint-Data_202007271729/ccrb_data_layout_table.xlsx")
+
 
 ```
 
@@ -47,23 +57,79 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: [ “A dozen of those high-ranking officers have three or more complaints with substantiated allegations; 10 are white. Five have reached the rank of deputy inspector, the lowest promoted at the commissioner’s discretion; all are white.”]
+* **Analysis summary**: [We used code to filter out the specific data woven throughout this sentence("substantiated allegations", "10 are white", "rank of deputy inspector"), which allowed us to narrow down and determine how the data was organized for analysis in this article. We initially narrowed our code by filtering by ethnicity which returned 69 rows of information. We then determined that we needed to further narrow the data by 'rank_now' and 'board_disposition'. We learned that our data has been updated by ProPublica, leading to a slight skew in our numbers versus those in the article (25 total (3 allegations, 17 who were white, 1 Hispanic officer who held the title of Deputy Inspector).]
 
 ```{r}
 # Put code to reverse engineer sentence here
 
-# Display results of code below this codeblock
+
+#glimpsing to find rows
+glimpse(allegations)
+
+
+# filtering !
+## text says ranks above captain, so not including those. 
+
+## below is high-ranking officers with complaints:
+highrankallegations <- allegations %>%
+filter(rank_now == "Deputy Inspector" | 
+        rank_now == "Inspector" | 
+        rank_now == "Deputy Chief" | 
+        rank_now == "Assistant Chief" | 
+        rank_now == "Bureau Chief" | 
+        rank_now == "Police Commissioner" | 
+        rank_now == "Chiefs and other ranks" ) %>%
+filter(board_disposition == "Substantiated (Command Lvl Instructions)" | 
+        board_disposition == "Substantiated (Charges)" | 
+        board_disposition == "Substantiated (Command Discipline A)" | 
+        board_disposition == "Substantiated (Formalized Training)" | 
+        board_disposition == "Substantiated (No Recommendations)" | 
+        board_disposition == "Substantiated (Command Discipline B)" | 
+        board_disposition == "Substantiated (Instructions)" | 
+        board_disposition == "Substantiated (Command Discipline)" | 
+        board_disposition == "Substantiated (Command Discipline)") %>%
+  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>% ## this part is where it tells you how many each officer got (looking for 3 or more complaints!)  
+  summarize(
+    count = n())  %>%
+    arrange(desc(count)) 
+
+#according to above, 25 officers had 3 or more complaints
+
+## filter by race (# of white officers)
+highrankallegations %>% 
+  filter(mos_ethnicity == "White")
+
+#above shows 17 white officers. 
+
+## those that reached deputy inspector 
+highrankallegations %>% 
+  filter(rank_now == "Deputy Inspector")
+
+
+# Display results of code below this codeblock 
 
 ```
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: [“Eighty-six of the roughly 420 officers in the department who currently hold a rank above captain — running precincts and other large commands and overseeing hundreds of officers — have tallied at least one misconduct allegation that was substantiated by the CCRB, meaning that investigators amassed enough evidence of offenses, ranging from bad language to pistol whippings, to say that they happened and broke patrol guidelines. The most common involved improper property entries and searches.”]
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
+
+#what are the ranks
+glimpse(allegations$rank_now)
+
+
+# finding the sustained allegations 
+allegations %>%
+filter(rank_now == "Captain" | rank_now == "Deputy Inspector" | rank_now == "Inspector" | rank_now == "Deputy Chief" | rank_now == "Assistant Chief" | rank_now == "Bureau Chief" | rank_now == "Police Commissioner" | rank_now == "Chiefs and other ranks") %>% 
+filter(board_disposition == "Substantiated (Command Lvl Instructions)" | board_disposition == "Substantiated (Charges)" | board_disposition == "Substantiated (Command Discipline A)" | board_disposition == "Substantiated (Formalized Training)" | board_disposition == "Substantiated (Command Discipline B)" | board_disposition == "Substantiated (Instructions)" | board_disposition == "Substantiated (Command Discipline)" | board_disposition == "Substantiated (Command Discipline)")
+
+
+#finding the specific incident (what occurred)
 
 # Display results of code below this codeblock
 
@@ -71,7 +137,7 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: ["Of at least 77 allegations made against him in 26 separate CCRB complaints, 29 were unsubstantiated; five were “unfounded,” meaning investigators concluded the incident never took place; and 27 were “exonerated,” meaning the conduct fell within patrol guidelines."]
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
@@ -83,7 +149,7 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: [But many of the officers also said that it’s possible to be an effective cop without so many complaints. An overwhelming majority of the city’s 36,000 officers do not have a single substantiated complaint on their records; only 1 in 9 does.]
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
@@ -95,7 +161,7 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 5
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: [Use data analysis to justify that decision. Why does he stand out as newsworthy, from all of the people they could have selected? Why, do you think, did the reporters single him out for an in-depth story. Write code to support your argument.]
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
