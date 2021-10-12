@@ -46,8 +46,17 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
-allegations <- read_csv("data/CCRB-Complaint-Data_202007271729/allegations_202007271729.csv")
-allegation_description <- read_excel("data/CCRB-Complaint-Data_202007271729/ccrb_data_layout_table.xlsx")
+allegations <- read_csv("data/CCRB-Complaint-Data_202007271729/allegations_202007271729.csv") %>%
+  mutate(
+    clean_disposition = case_when(
+    str_detect(board_disposition, "^S") ~ "Substantiated",
+    TRUE ~ board_disposition
+  ))
+
+  
+  allegation_description <- read_excel("data/CCRB-Complaint-Data_202007271729/ccrb_data_layout_table.xlsx")
+
+
 
 
 ```
@@ -80,19 +89,14 @@ filter(rank_now == "Deputy Inspector" |
         rank_now == "Bureau Chief" | 
         rank_now == "Police Commissioner" | 
         rank_now == "Chiefs and other ranks" ) %>%
-filter(board_disposition == "Substantiated (Command Lvl Instructions)" | 
-        board_disposition == "Substantiated (Charges)" | 
-        board_disposition == "Substantiated (Command Discipline A)" | 
-        board_disposition == "Substantiated (Formalized Training)" | 
-        board_disposition == "Substantiated (No Recommendations)" | 
-        board_disposition == "Substantiated (Command Discipline B)" | 
-        board_disposition == "Substantiated (Instructions)" | 
-        board_disposition == "Substantiated (Command Discipline)" | 
-        board_disposition == "Substantiated (Command Discipline)") %>%
+filter(clean_disposition == "Substantiated") %>%
   group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>% ## this part is where it tells you how many each officer got (looking for 3 or more complaints!)  
   summarize(
     count = n())  %>%
-    arrange(desc(count)) 
+    arrange(desc(count)) %>%
+    filter(count > 2)
+
+highrankallegations
 
 #according to above, 25 officers had 3 or more complaints
 
@@ -125,7 +129,14 @@ glimpse(allegations$rank_now)
 
 # finding the sustained allegations 
 allegations %>%
-filter(rank_now == "Captain" | rank_now == "Deputy Inspector" | rank_now == "Inspector" | rank_now == "Deputy Chief" | rank_now == "Assistant Chief" | rank_now == "Bureau Chief" | rank_now == "Police Commissioner" | rank_now == "Chiefs and other ranks") %>% 
+filter(rank_now == "Captain" | 
+         rank_now == "Deputy Inspector" | 
+         rank_now == "Inspector" | 
+         rank_now == "Deputy Chief" | 
+         rank_now == "Assistant Chief" | 
+         rank_now == "Bureau Chief" | 
+         rank_now == "Police Commissioner" | 
+         rank_now == "Chiefs and other ranks") %>% 
 filter(board_disposition == "Substantiated (Command Lvl Instructions)" | board_disposition == "Substantiated (Charges)" | board_disposition == "Substantiated (Command Discipline A)" | board_disposition == "Substantiated (Formalized Training)" | board_disposition == "Substantiated (Command Discipline B)" | board_disposition == "Substantiated (Instructions)" | board_disposition == "Substantiated (Command Discipline)" | board_disposition == "Substantiated (Command Discipline)")
 
 
@@ -142,6 +153,21 @@ filter(board_disposition == "Substantiated (Command Lvl Instructions)" | board_d
 
 ```{r}
 # Put code to reverse engineer sentence here
+chrisallegations <- allegations %>% 
+  filter(last_name == "Mccormack",
+         first_name == "Christophe") %>% 
+   group_by(unique_mos_id, first_name, last_name, allegation) %>% 
+    summarize(
+    count = n())  %>%
+    arrange(desc(count))
+
+chrisallegations  %>%
+  group_by(allegation, board_disposition) %>%
+  summarize(
+    count = n())  %>%
+    arrange(desc(count))
+  
+
 
 # Display results of code below this codeblock
 
