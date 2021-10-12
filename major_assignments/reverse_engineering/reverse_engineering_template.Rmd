@@ -137,7 +137,7 @@ filter(rank_now == "Captain" |
          rank_now == "Bureau Chief" | 
          rank_now == "Police Commissioner" | 
          rank_now == "Chiefs and other ranks") %>% 
-filter(board_disposition == "Substantiated (Command Lvl Instructions)" | board_disposition == "Substantiated (Charges)" | board_disposition == "Substantiated (Command Discipline A)" | board_disposition == "Substantiated (Formalized Training)" | board_disposition == "Substantiated (Command Discipline B)" | board_disposition == "Substantiated (Instructions)" | board_disposition == "Substantiated (Command Discipline)" | board_disposition == "Substantiated (Command Discipline)")
+filter(clean_disposition == "Substantiated")
 
 
 #finding the specific incident (what occurred)
@@ -161,11 +161,17 @@ chrisallegations <- allegations %>%
     count = n())  %>%
     arrange(desc(count))
 
-chrisallegations  %>%
-  group_by(allegation, board_disposition) %>%
-  summarize(
+chrisallegations
+## shows 26 separate allegations
+
+
+allegations %>% 
+  filter(last_name == "Mccormack",
+         first_name == "Christophe") %>% 
+  group_by(clean_disposition) %>% 
+   summarize(
     count = n())  %>%
-    arrange(desc(count))
+    arrange(desc(count)) 
   
 
 
