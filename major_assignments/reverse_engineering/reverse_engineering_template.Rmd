@@ -187,7 +187,20 @@ allegations %>%
 ```{r}
 # Put code to reverse engineer sentence here
 
+#make new dataset that gives number of officers with at least one substantiated complaints
+officers_with_complaints <- allegations %>%
+  filter(clean_disposition == "Substantiated") %>%
+  distinct(unique_mos_id, first_name, last_name, rank_now)
+#number of officers with at least one substantiated complaint/total number of officers
+officers_with_complaints %>%
+    summarize(
+      total = n()/36000
+    ) 
+#1 in 9 = .1111
+
 # Display results of code below this codeblock
+
+officers_with_complaints 
 
 ```
 
