@@ -140,8 +140,11 @@ approved_loans_state %>%
   mutate(ppp_loans_per_100000 = total_ppp_loans/population*100000) %>%
   arrange(desc(ppp_loans_per_100000))
 
-state_table
 
+## display
+approved_loans_state
+
+# oh my god I cannot believe that worked
 
 
 
