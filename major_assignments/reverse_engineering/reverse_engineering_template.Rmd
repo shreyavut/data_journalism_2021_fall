@@ -51,7 +51,20 @@ allegations <- read_csv("data/CCRB-Complaint-Data_202007271729/allegations_20200
     clean_disposition = case_when(
     str_detect(board_disposition, "^S") ~ "Substantiated",
     TRUE ~ board_disposition
-  ))
+  )
+  ) %>% 
+  #new column that identifies officers that are currently a higher rank than captain
+  mutate(
+    rank_above_captain = if_else(
+      rank_now == 'Deputy Inspector' | 
+      rank_now == 'Inspector' | 
+      rank_now == 'Deputy Chief' | 
+      rank_now == 'Assistant Chief' | 
+      rank_now == 'Bureau Chief' | 
+      rank_now == 'Police Comissioner' | 
+      rank_now == 'Chiefs and other ranks', "Yes", "No")
+  )
+
 
   
   allegation_description <- read_excel("data/CCRB-Complaint-Data_202007271729/ccrb_data_layout_table.xlsx")
@@ -82,13 +95,7 @@ glimpse(allegations)
 
 ## below is high-ranking officers with complaints:
 highrankallegations <- allegations %>%
-filter(rank_now == "Deputy Inspector" | 
-        rank_now == "Inspector" | 
-        rank_now == "Deputy Chief" | 
-        rank_now == "Assistant Chief" | 
-        rank_now == "Bureau Chief" | 
-        rank_now == "Police Commissioner" | 
-        rank_now == "Chiefs and other ranks" ) %>%
+filter(rank_above_captain == "Yes") %>%
 filter(clean_disposition == "Substantiated") %>%
   group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>% ## this part is where it tells you how many each officer got (looking for 3 or more complaints!)  
   summarize(
@@ -129,16 +136,21 @@ glimpse(allegations$rank_now)
 
 # finding the sustained allegations 
 allegations %>%
-filter(rank_now == "Captain" | 
-         rank_now == "Deputy Inspector" | 
-         rank_now == "Inspector" | 
-         rank_now == "Deputy Chief" | 
-         rank_now == "Assistant Chief" | 
-         rank_now == "Bureau Chief" | 
-         rank_now == "Police Commissioner" | 
-         rank_now == "Chiefs and other ranks") %>% 
-filter(clean_disposition == "Substantiated")
-
+filter(rank_above_captain == "Yes") %>%
+filter(clean_disposition == "Substantiated") %>%
+  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
+  summarize(
+    total_allegations = n()
+  ) 
+#most common misconduct allegation
+allegations %>%
+  filter(rank_above_captain == "Yes") %>%
+  filter(clean_disposition == "Substantiated") %>%
+  group_by(allegation) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
 
 #finding the specific incident (what occurred)
 
@@ -162,9 +174,11 @@ chrisallegations <- allegations %>%
     arrange(desc(count))
 
 chrisallegations
-## shows 26 separate allegations
+## shows 26 separate allegations 
+## unfounded claims were not entered into the dataset 
 
 
+## below codeblock shows the 
 allegations %>% 
   filter(last_name == "Mccormack",
          first_name == "Christophe") %>% 

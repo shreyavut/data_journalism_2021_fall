@@ -98,7 +98,7 @@ Q6. What might explain why, according to this site, the DOJ has filed PPP-relate
 A6. I think it makes sense because some districts may have had higher populations with more chance of fraud, or that fraud just tended to be concentrated in these specific districts. The DOJ could have also prioritized more serious cases vs petty cases. 
 
 Q7. Which state had the most approved PPP loans per 100,000 population? [This web page](https://smussenden.github.io/coursefiles/ppp_scraping_example/index.html) has links to 52 individual web pages, one for each state (plus Washington, D.C. and Puerto Rico). Each of those web pages contains a one-row html table that has the name of the state, the number of approved loans, and the 2019 population. Here's an example for [Alabama](https://smussenden.github.io/coursefiles/ppp_scraping_example/states/alabama.html). You'll need to loop over the individual state urls, scrape each individual page and combine the information on each page into a single dataframe to answer this question.  
-A7.
+A7. South Dakota!
 ```{r}
 
 # this is an empty dataframe for resultys
@@ -117,14 +117,14 @@ state_urls <- ppp_loans[[1]]
 for(row_number in 1:nrow(state_urls)) {
   
   #this makes a dataframe for each row from state_urls
-  each_row_df <- state_urls %>%
+  row_df <- state_urls %>%
   slice(row_number)
   
   #assigning a variable to each url
-  indvidual_url <- row_df$url 
+  ind_url <- row_df$url 
   
   #readin in da tables !
-  state_table <- individual_url %>%    
+  state_table <- ind_url %>%    
     read_html() %>%
     html_table() 
   
@@ -139,6 +139,8 @@ for(row_number in 1:nrow(state_urls)) {
 approved_loans_state %>%
   mutate(ppp_loans_per_100000 = total_ppp_loans/population*100000) %>%
   arrange(desc(ppp_loans_per_100000))
+
+state_table
 
 
 
