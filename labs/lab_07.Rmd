@@ -101,6 +101,9 @@ Q7. Which state had the most approved PPP loans per 100,000 population? [This we
 A7.
 ```{r}
 
+# this is an empty dataframe for resultys
+approved_loans_state <- tibble()
+
 ppp_url <- "https://smussenden.github.io/coursefiles/ppp_scraping_example/index.html"
 
 ppp_loans <- ppp_url %>% 
@@ -109,13 +112,33 @@ ppp_loans <- ppp_url %>%
 
 state_urls <- ppp_loans[[1]]
 
+# it is time to make a 4 loop !
+   
 for(row_number in 1:nrow(state_urls)) {
   
-    each_row_df <- naics_industry %>%
-      slice(row_number)
-
-    # To help us see what's happening as we build this, we're going to print the thing we're creating.  
-    print(each_row_df)
+  #this makes a dataframe for each row from state_urls
+  each_row_df <- state_urls %>%
+  slice(row_number)
+  
+  #assigning a variable to each url
+  indvidual_url <- row_df$url 
+  
+  #readin in da tables !
+  state_table <- individual_url %>%    
+    read_html() %>%
+    html_table() 
+  
+  #selcting the table from the list
+  state_table <- state_table[[1]]
+  
+  #bindin some row
+  approved_loans_state <- approved_loans_state %>%
+    bind_rows(state_table)
+}
+#results !
+approved_loans_state %>%
+  mutate(ppp_loans_per_100000 = total_ppp_loans/population*100000) %>%
+  arrange(desc(ppp_loans_per_100000))
 
 
 
