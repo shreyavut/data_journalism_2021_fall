@@ -226,6 +226,14 @@ officers_with_complaints
 ```{r}
 # Put code to reverse engineer sentence here
 
+allegations %>%
+  filter(rank_above_captain == "Yes") %>%
+ group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
+ summarize(
+    total_allegations = n()
+  ) %>%
+  arrange(desc(total_allegations))
+
 # Display results of code below this codeblock
 
 ```
