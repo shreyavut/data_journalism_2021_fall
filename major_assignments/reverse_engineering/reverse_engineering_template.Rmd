@@ -29,7 +29,7 @@ Loading required libraries for this analysis.
 library(tidyverse)
 library(lubridate)
 
-install.packages("readxl")
+#install.packages("readxl")
 
 library(readxl)
 
@@ -38,6 +38,10 @@ library(readxl)
 ## Load and Cleaning Data
 
 In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+
+* id
+* two
+* three 
 
 ```{r}
 # Load required data
