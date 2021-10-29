@@ -17,7 +17,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **Task** Create a codeblock and load appropriate packages and settings for this lab.
 
-## Questions
+```{r}
+library(tidyverse)
+
+```
 
 **Q1.** Which day in April 2020 saw the most loans approved in West Virginia? 
 
@@ -28,6 +31,43 @@ You MUST do the following things when answering this question:
   * sets the height of the line for any given date -- its y axis value -- to the total number of loans on that date.
   * has an appropriate title, source, and x and y axis titles. 
   * adds a small circle (called a "point") on the line for dates that had loans. And to the left of each circle/point, shows the number of loans on that date.  I didn't show you how to do this in the prelab, so do some web sleuthing to figure it out! 
+  
+```{r}
+#this codeblock will be for doing the actual chart
+
+
+#first I will load the data :)
+wv_ppp <- read_rds("data/lab_09.rds")
+all_ppp <- read_csv("data/state_ppp_all.csv")
+
+# now I will attempt to filter the april loans!
+wv_april_ppp <- wv_ppp %>%
+  group_by(date_approved) %>%
+  summarise(
+    total_loans=n()
+  ) %>%
+  filter(str_detect(date_approved, "^2020-04"))
+
+# behold my line chart. 
+
+wv_april_ppp %>%
+  ggplot(aes(x=date_approved, y=total_loans)) +
+  geom_line() + 
+  scale_x_date(date_breaks = "1 day", date_labels = "%d-%b-%Y") +
+  geom_point() + 
+  geom_text(aes(label=total_loans), nudge_x = -1, nudge_y = 0,check_overlap = T) +
+  theme(
+    axis.text.x = element_text(angle = 45,  hjust=1)
+  ) +
+  labs(
+    title="WV PPP Approved Loans in April 2020",
+    x = "Date Approved",
+    y = "Total Loans",
+    caption = "source: SBA PPP loan database"
+  )
+
+
+```
 
 Basically, your chart should look like this image, which will appear when you run the codeblock below. 
 
@@ -35,6 +75,7 @@ Basically, your chart should look like this image, which will appear when you ru
 knitr::include_graphics(rep("images/chart_1.png"))
 ```
 **A1.** 
+See above
 
 **Q2.** What are the top 10 states that got the most PPP loans per 100,000 people? You MUST do the following things when answering this question:
 
@@ -43,6 +84,12 @@ knitr::include_graphics(rep("images/chart_1.png"))
 * Use the tidycensus API to get a table of total population by state from the American Community Survey (ACS). To do this, you'll use use the alphanumeric variable for total population, which has the following "label" and "concept": "Estimate!!Total:" and "SEX BY AGE".  
 * Use ggplot to make a horizontal bar chart that shows the top 10 states, with the length of the bar determined by the state's total PPP loans per 100,000 people. Give it an appropriate title, source, and x and y axis titles. 
 * Make the bars on the chart blue! I didn't show you how to do this in the prelab, so do some web sleuthing to figure it out.  
+
+``` {r}
+#data loaded above!
+
+```
+
 
 **A2.** 
 
