@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-
+library(tidycensus)
 ```
 
 **Q1.** Which day in April 2020 saw the most loans approved in West Virginia? 
@@ -75,7 +75,7 @@ Basically, your chart should look like this image, which will appear when you ru
 knitr::include_graphics(rep("images/chart_1.png"))
 ```
 **A1.** 
-See above
+April 28, 2020
 
 **Q2.** What are the top 10 states that got the most PPP loans per 100,000 people? You MUST do the following things when answering this question:
 
@@ -86,12 +86,50 @@ See above
 * Make the bars on the chart blue! I didn't show you how to do this in the prelab, so do some web sleuthing to figure it out.  
 
 ``` {r}
-#data loaded above!
+#data loaded 
+all_ppp <- read_csv("data/state_ppp_all.csv")
+
+## api key
+census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install=TRUE, overwrite=TRUE)
+
+#first get state populations
+state_pop <- 
+  get_acs(geography = "state",
+          variables = c(total_pop = "B01001_001"),
+          year = 2019) %>%
+  rename(state = NAME, population = estimate) %>%
+  arrange(desc(population))
+
+## filtering top 10 
+top10_ppp_per_100k <- all_ppp %>%
+  mutate(state = case_when(
+    state == "S Dakota" ~ "South Dakota",
+    state == "N Dakota" ~ "North Dakota",
+    TRUE ~ state)) %>%
+  inner_join(state_pop, by=c("state")) %>%
+  select(-GEOID, -variable, -moe) %>%
+  mutate(total_loans_per_100k = total_ppp_loans/population*100000) %>%
+  arrange(desc(total_loans_per_100k)) %>%
+  head(10)
+
+
+## making a chart 
+top10_ppp_per_100k %>%
+  ggplot() +
+  geom_bar(aes(x=reorder(state, total_loans_per_100k), weight=total_loans_per_100k), fill="cornflowerblue") +
+  coord_flip() +
+  labs(
+    title="Top 10 States that got the Most PPP Loans per 100,000 People",
+    x = "State",
+    y = "Total Loans",
+    caption = "source: SBA PPP loan database and Census API database"
+  )
 
 ```
 
 
 **A2.** 
+The top 10 states are South Dakota, North Dakota, Nebraska, Georgia, Iowa, Illinois, Louisiana, Florida, Mississippi, and Montana
 
 **Q3.**  A scatterplot is a type of chart that helps us see relationships between two variables. One variable goes on the x axis, the other on the y axis.  For each row/observation in our data, a scatterplot puts a circle (or a "point") where the two variables intersect on a grid. 
 
@@ -114,6 +152,27 @@ To answer those questions, make a codeblock and do the following:
 5. In the answer space below, describe what you see and answer the questions posed above.  In a general sense, what do you think this means?  
 
 **A3.**  
+The y = x line in the middle represents what would occur if the amount of loans approved versus forgiven was a 1:1 ratio. This line, however, doesn't appear to be drawn by R, and is actually a bunch of loans that were legitimately forgiven at the same amount they were approved, meaning they were fully forgiven. However, we can also see that there are a significant proportion of loans which were forgiven for much less than they were approved for. 
+``` {r}
 
+#filtering
+
+wv_ppp_over_25k <- wv_ppp %>%
+  filter(amount < 25000) %>%
+  mutate(forgiveness_amount = case_when(
+    is.na(forgiveness_amount) ~ 0,
+    TRUE ~ forgiveness_amount)) 
+
+## scatterplot
+wv_ppp_over_25k %>%    
+  ggplot() +
+  geom_point(aes(x=current_approval_amount, y=forgiveness_amount), size=1) +
+  labs(
+    title="Amount of PPP Loans Approved vs. Forgiven for Loans More Than $25,000 in WV",
+    x = "Amount Approved",
+    y = "Amount Forgiven",
+    caption = "source: SBA PPP Database"
+  )
+```
 
 -30-
