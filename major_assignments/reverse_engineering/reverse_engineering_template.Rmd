@@ -78,13 +78,34 @@ allegations <- read_csv("data/CCRB-Complaint-Data_202007271729/allegations_20200
 
 ```
 
+## Data Dictionary
+Our data dictionary describes what each variable (column name) means in the cleaned_allegations dataframe and gives the number of variable types for each variables. The only variables outlined in the dictionary are the ones used in order to reverse engineer the article.
+
+The following structure is used for our data dictionary:
+variable_name: Description of variable (# of variable types)
+
+unique_mos_id: The unique identification number given to each Member of Service in the NYPD (3996)
+first_name: The first name of the Member of Service in the NYPD who has received a complaint, limited to 10 characters (1217)
+last_name: The last name of the Member of Service in the NYPD who has received a complaint, limited to 10 characters (2835)
+rank_now: The current rank of the Member of Service in the NYPD who has received a complaint (8)
+mos_ethnicity: The ethnicity of the Member of Service in the NYPD who has received a complaint (5)
+allegation: A brief description of the allegation made against a Member of Service in the NYPD, not cleaned (115)
+board_disposition: The CCRB's decision regarding a complaint against a Member of Service in the NYPD, not cleaned (11)
+cleaned_board_disposition: The CCRB's decision regarding a complaint against a Member of Service in the NYPD, cleaned for less variable types (3)
+rank_above_captain: The current rank of the Member of Service in the NYPD who has received a complaint cleaned into above captain or not (2)
+grouped_allegation: A description of the allegation made against a Member of Service in the NYPD, cleaned for less variable types (8)
+
+## Sentences to Engineer
+In this notebook, we are reverse engineering five sentences from the story.
+
+
 ## Sentences to Engineer
 In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
 * **Sentence text**: [ “A dozen of those high-ranking officers have three or more complaints with substantiated allegations; 10 are white. Five have reached the rank of deputy inspector, the lowest promoted at the commissioner’s discretion; all are white.”]
-* **Analysis summary**: [We used code to filter out the specific data woven throughout this sentence("substantiated allegations", "10 are white", "rank of deputy inspector"), which allowed us to narrow down and determine how the data was organized for analysis in this article. We initially narrowed our code by filtering by ethnicity which returned 69 rows of information. We then determined that we needed to further narrow the data by 'rank_now' and 'board_disposition'. We learned that our data has been updated by ProPublica, leading to a slight skew in our numbers versus those in the article (25 total (3 allegations, 17 who were white, 1 Hispanic officer who held the title of Deputy Inspector).]
+* **Analysis summary**: [My analysis did not confirm the results from the article, but I believe this is due to the fact that the data has been updated since. I found that there were 25 high-ranking officers with three or more complaints, not a dozen, and 17 were White, not 10. Also, there were 11 high-ranking officers with three or more complaints that are now a deputy inspector, and they are not all White. In regard to format, I narrowed down the data to the appropriate requirements, then grouped and summarized to obtain the number of total complaints for each officer. Finally, I filtered for officers with more than two complaints.]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -97,29 +118,56 @@ glimpse(allegations)
 # filtering !
 ## text says ranks above captain, so not including those. 
 
-## below is high-ranking officers with complaints:
+## below is high-ranking officers with more than 3 complaints:
 highrankallegations <- allegations %>%
 filter(rank_above_captain == "Yes") %>%
 filter(clean_disposition == "Substantiated") %>%
-  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>% ## this part is where it tells you how many each officer got (looking for 3 or more complaints!)  
+    group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
   summarize(
-    count = n())  %>%
-    arrange(desc(count)) %>%
-    filter(count > 2)
+    total_allegations = n()
+  ) %>%
+    ungroup() %>%
+    filter(total_allegations > 2) %>%
+    arrange(desc(total_allegations)) %>%
+    summarize(
+          total_high_ranking = n()
+        )
 
 highrankallegations
 
-#according to above, 25 officers had 3 or more complaints
-
 ## filter by race (# of white officers)
-highrankallegations %>% 
-  filter(mos_ethnicity == "White")
+allegations %>%
+  filter(rank_above_captain == "Yes") %>%
+  filter(clean_disposition == "Substantiated") %>%
+  filter(mos_ethnicity == "White") %>%
+  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
+    summarize(
+      total_allegations = n()
+    ) %>%
+    ungroup() %>%  
+    filter(total_allegations > 2) %>%
+      arrange(desc(total_allegations)) %>%
+      summarize(
+        total_high_ranking_white = n()
+       )
 
 #above shows 17 white officers. 
 
 ## those that reached deputy inspector 
-highrankallegations %>% 
-  filter(rank_now == "Deputy Inspector")
+allegations %>%
+  filter(rank_now == "Deputy Inspector") %>%
+  filter(clean_disposition == "Substantiated") %>%
+  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
+    summarize(
+      total_allegations = n()
+    ) %>%
+      ungroup() %>%
+      filter(total_allegations > 2) %>%
+      arrange(desc(total_allegations)) %>%
+      summarize(
+        total_deputy_inspector = n()
+      )
+
 
 
 # Display results of code below this codeblock 
@@ -129,7 +177,7 @@ highrankallegations %>%
 ### Sentence 2
 
 * **Sentence text**: [“Eighty-six of the roughly 420 officers in the department who currently hold a rank above captain — running precincts and other large commands and overseeing hundreds of officers — have tallied at least one misconduct allegation that was substantiated by the CCRB, meaning that investigators amassed enough evidence of offenses, ranging from bad language to pistol whippings, to say that they happened and broke patrol guidelines. The most common involved improper property entries and searches.”]
-* **Analysis summary**: [ In this section of code, we began by looking into the allegations by rank, filtering by the ranks of "Captain", "Deputy Inspector","Inspector", Deputy Chief", Assistant Chief", "Bureau Chief", "Police Commissioner" and "Chiefs and other ranks". Finally, we filtered the data by substantiated allegations. This allowed us to reach the conclusion that eighty-six of around 420 officers in the department who hold a rank above captain have had at least one misconduct allegation that was substantiated by the CCRB.]
+* **Analysis summary**: [In this section of code, we began by looking into the allegations by rank, filtering for ranks above captain and substantiated claims from the new cleaned columns. Then, I grouped by officer and displayed a count, allowing us to reach the conclusion that 81 of around 420 officers in the department who hold a rank above captain have had at least one misconduct allegation that was substantiated by the CCRB. The most common misconduct allegation was in fact imporoper proterty entries and searches, but this could have been different if the allegations were cleaned in a different format.]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -140,12 +188,17 @@ glimpse(allegations$rank_now)
 
 # finding the sustained allegations 
 allegations %>%
-filter(rank_above_captain == "Yes") %>%
-filter(clean_disposition == "Substantiated") %>%
+  filter(rank_above_captain == "Yes") %>%
+  filter(clean_disposition == "Substantiated") %>%
   group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
   summarize(
     total_allegations = n()
-  ) 
+  )  %>%
+  ungroup() %>%
+  summarize(
+        total_high_ranking_substantiated = n()
+      )
+
 #most common misconduct allegation
 allegations %>%
   filter(rank_above_captain == "Yes") %>%
@@ -156,7 +209,6 @@ allegations %>%
   ) %>%
   arrange(desc(count))
 
-#finding the specific incident (what occurred)
 
 # Display results of code below this codeblock
 
@@ -165,24 +217,31 @@ allegations %>%
 ### Sentence 3
 
 * **Sentence text**: ["Of at least 77 allegations made against him in 26 separate CCRB complaints, 29 were unsubstantiated; five were “unfounded,” meaning investigators concluded the incident never took place; and 27 were “exonerated,” meaning the conduct fell within patrol guidelines."]
-* **Analysis summary**: [In order to uncover the data used for this sentence of the article, we created the oject 'cchrisallegations' and filtered by last name 'Mccormack' and first name 'Christophe'. We grouped the data for Christopher McCormack by 'unique_mos_id', 'first_name', 'last_name' and 'allegation' and this returned 26 separate allegations. After this, we further grouped the data by 'clean_disposition' and were able to organize the allegations made against McCormack by unsubstantiated allegations, unfounded allegations and exonerated allegations.]
+* **Analysis summary**: [In order to confirm/deny this statement, we needed to see how many claims Christopher McCormack had, so we filtered using his ID (18589) to develop a new data frame called mccormack_allegations. Using this dataframe, we filtered for unsubstantiated claims first, returning a result of 29. Then we tried for exonerated claims, which returned 27. Unfounded claims were not present in the dataset provided, so we cannot evaluate that point further; however, we confimred the other results from the sentence.
+]
 
 ```{r}
 # Put code to reverse engineer sentence here
-chrisallegations <- allegations %>% 
-  filter(last_name == "Mccormack",
-         first_name == "Christophe") %>% 
-   group_by(unique_mos_id, first_name, last_name, allegation) %>% 
-    summarize(
-    count = n())  %>%
-    arrange(desc(count))
+#make new dataset that shows only Christopher McCormack's allegations
+#Christopher McCormack's unique_mos_id is 18589
+chrisallegations <- allegations %>%
+  filter(unique_mos_id == 18589)
 
-chrisallegations
-## shows 26 separate allegations 
+
+# # of unsubstantiated allegations for chris
+chrisallegations %>% 
+  filter(clean_disposition == "Unsubstantiated") %>%
+  group_by(unique_mos_id) %>%
+  summarize(
+    unsubstantiated_count = n()
+  )
+
+## 29 !!
+
 ## unfounded claims were not entered into the dataset 
 
 
-## below codeblock shows the 
+## below codeblock shows the types of allegations (including exonerated)
 allegations %>% 
   filter(last_name == "Mccormack",
          first_name == "Christophe") %>% 
@@ -200,7 +259,7 @@ allegations %>%
 ### Sentence 4
 
 * **Sentence text**: [But many of the officers also said that it’s possible to be an effective cop without so many complaints. An overwhelming majority of the city’s 36,000 officers do not have a single substantiated complaint on their records; only 1 in 9 does.]
-* **Analysis summary**: [For this sentence, we began by creating an entirely new data set that would return the total number of officers with at least one substantiated complaint. We created an object called 'officers_with_complaints' and filtered by 'substantiated' allegations and used distinct to return only the 'unique_mos_id', 'first_name', 'last_name' and 'rank_now' columns. After this, we divided the number of officers with at least one substantiated complaint by the total number of officers, in order to conclude that a majority of the city's 36,000 officers do not have a substantiated complaint on their record, only 1 in 9 does.]
+* **Analysis summary**: [For this sentence, we began by creating an entirely new dataset, called officers_with_complaints, that would return the total number of officers with at least one substantiated complaint.  First, we took the original dataframe and  filtered for substantiated allegations in our new cleaned_board_disposition column, then used distinct to return only the 'unique_mos_id', 'first_name', 'last_name' and 'rank_now' columns. After this, we used a summarize function to get the total number of officers with at least one substantiated complaint, which we then divided by the total number of officers (36,000). Our result was .1111, which is equal to 1 in 9, confirming the results from the story.]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -224,22 +283,18 @@ officers_with_complaints
 
 ### Sentence 5
 
-* **Sentence text**: [Use data analysis to justify that decision. Why does he stand out as newsworthy, from all of the people they could have selected? Why, do you think, did the reporters single him out for an in-depth story. Write code to support your argument.]
-* **Analysis summary**: [ In our last section, we created code to show why Christopher McCormack stands out as newsworthy. The reporters singled him out as newsworthy because, although he had similar allegations to many other officers, his accusations by Black and Latino men of invasive, humiliating searches were far more significant. Reporters wrote that he was accused of pulling own their pants in public, exposing their genitals and using inappropriate methods to search for drugs. In our code, we began by filtering the cleaned allegations by "rank_above_captain= "Yes" and grouping by 'unique_mos_id', 'first_name', 'last_name', 'rank_now', and 'mos_ethnicity'. This returned results that showed the depth of the claims made against McCormack.]
+* **Sentence text**: [There isn't really a sentence from the story, but I'd like you to answer this question: The story focused on Christopher McCormack. Use data analysis to justify that decision. Why does he stand out as newsworthy, from all of the people they could have selected? Why, do you think, did the reporters single him out for an in-depth story. Write code to support your argument.]
+* **Analysis summary**: [ In our last section, we used code to show why Christopher McCormack stands out as newsworthy. In order to do this, we used our dataframe to filter for all officers above the rank of captain, or in other words, high-ranking officers. Then we grouped by officer to count the total number of allegations for each, in which Christopher McCormack is the second to appear of the sorted list. Not only does he have the second most number of allegations, but he is higher ranking than the only person with more than him, making him more newsworthy as the question as to why he was continuously promoted becomes apparent.
 
 ```{r}
 # Put code to reverse engineer sentence here
-
-allegations %>%
+cleaned_allegations %>%
   filter(rank_above_captain == "Yes") %>%
- group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
- summarize(
+  group_by(unique_mos_id, first_name, last_name, rank_now, mos_ethnicity) %>%
+  summarize(
     total_allegations = n()
   ) %>%
   arrange(desc(total_allegations))
-
-# Display results of code below this codeblock
-
 ```
 
 -30-
