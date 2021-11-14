@@ -1,0 +1,54 @@
+---
+title: "Data Analysis Project"
+author: "michael purdie"
+date: "11/14/21"
+output:
+  html_document:
+    theme: cerulean
+    highlight: pygments
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+In this notebook, we are working with the [Washington Post police shooting database](https://github.com/washingtonpost/data-police-shootings) and the [Washington Post homicides database.](https://github.com/washingtonpost/data-homicides)
+
+## Load libraries
+
+Loading required libraries for this analysis.
+
+```{r echo=FALSE, message=FALSE}
+#essential libraries
+library(tidyverse)
+library(janitor)
+library(lubridate)
+#additional libraries 
+library(sf)
+library(tigris)
+library(tidycensus)
+
+```
+
+## Load and Cleaning Data
+
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+
+## Quick Analysis based on loaded data: in looking at the police shootings data, everything looks relatively clean, so we don't foresee having to do any cleaning. We're choosing to focus on the geography of police shootings, so we need to use census data in order to figure out where exactly these police shootings are happening, and if there are certain neighborhoods (ex: majority-minority or low income) that are more affected by police shootings. We'll likely need to form some kind of relationship between the lat/long coordinates in this dataset and data from census tracts. 
+
+```{r}
+# Load required data
+police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-shootings-data.csv")
+homicides <- read_csv("data/data-homicides-master/homicide-data.csv")
+
+## census api key
+census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", overwrite = TRUE)
+
+
+```
