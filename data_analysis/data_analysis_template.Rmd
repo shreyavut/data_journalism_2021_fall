@@ -34,6 +34,9 @@ library(sf)
 library(tigris)
 library(tidycensus)
 
+install.packages("usmap")
+library(usmap)
+
 ```
 
 ## Load and Cleaning Data
@@ -50,5 +53,31 @@ homicides <- read_csv("data/data-homicides-master/homicide-data.csv")
 ## census api key
 census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", overwrite = TRUE)
 
+
+```
+
+## Working with the data 
+
+``` {r}
+## trying to make a map to generally understand where the shootings are
+## getting some county data
+counties <- counties() 
+usa_counties <- counties 
+
+## adding a geometry columns to police shootings
+police_shootings_geom <- police_shootings %>%
+  mutate(geometry = c("latitude", "longitude"))
+
+## above did not work 
+ 
+## mapping all the counties
+
+## this is not really working rn but I am trying lol
+
+ggplot() + 
+  geom_sf(data=usa_counties) + 
+  geom_sf(data=police_shootings) +
+  theme_minimal() +
+  geometry = geometry
 
 ```
