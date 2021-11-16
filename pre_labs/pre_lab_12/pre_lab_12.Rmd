@@ -54,6 +54,7 @@ We'll read it into a dataframe like usual and clean up the column names:
 ### Task 2: Read vaccination data into dataframe
 **Task** Run the following code and describe the dataframe
 **Answer**
+Vaccinations in a given county on a given date. 
 
 ```{r}
 county_vaccinations_by_date <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/MD_COVID19_TotalVaccinationsCountyFirstandSecondSingleDose.csv") %>%
@@ -75,7 +76,7 @@ county_vaccinations_by_date <- county_vaccinations_by_date %>%
 
 ### Task 4: Count the number of rows for each county
 **Task** Run the following code and describe the dataframe it produces. Is there anything unusual there?
-**Answer**
+**Answer** There is are several unknown and NA records.
 
 Let's see if there's anything unusual in the data by counting the number of rows for each county:
 
@@ -89,7 +90,7 @@ View(county_totals)
 
 ### Task 5: Examine the NA records
 **Task** Run the following code and describe the tibble it produces. What do you think this data represents?
-**Answer**
+**Answer** This data represents the totals of NA counties. 
 
 There are totals for all of Maryland's jurisdictions, plus one for "Unknown" and one that's NA. All but the last one have roughly the same number of records. What's going on with the NA records?
 
@@ -127,7 +128,7 @@ What if we just ranked them? Where does this date rank? For that, we'll create a
 
 ### Task 8: Produce a dataframe for Prince George's County that ranks its days in terms of number of people fully vaccinated on each day
 **Task** Run the following code and describe the dataframe it produces. Is there a pattern for the most recent 7-10 days?
-**Answer**
+**Answer** The most recent dates aren't necessarily higher ranks, indicating that less people are getting fully vaccinated on a given day. 
 
 ```{r}
 ranked <- county_vaccinations_by_date %>%
@@ -231,7 +232,7 @@ sub
 
 ### Task 13: Produce a description for your bar chart based on the variables in Task 11
 **Task** Run the following code and put the value of `sub` in the answer.
-**Answer**
+**Answer** "The number of people in Prince George's County fully vaccinated on November 14 decreased by -74.25 percent compared to the week before"
 
 Now we can add that to our labels.
 
@@ -282,7 +283,7 @@ Let's filter out Maryland first and create a line chart:
 
 ### Task 15: Filter on Maryland and create a line chart
 **Task** Run the following code and describe what the resulting chart shows
-**Answer**
+**Answer** We've plotted case trends based on counties!
 
 ```{r}
 maryland <- covid %>% filter(state == "Maryland")
@@ -294,7 +295,7 @@ The colors can be a little hard to make out, but when you have counties with a l
 
 ### Task 16: Switch the line chart to use a log scale
 **Task** Run the following code and describe what the resulting chart shows
-**Answer**
+**Answer** Looks like like a log function of coronavirus cases by county in Md. 
 
 ```{r}
 ggplot() + geom_line(data=maryland, aes(x=date, y=cases, group=county, color=county)) + scale_y_continuous(trans="log10")
@@ -310,7 +311,7 @@ I'm adding one piece to the end to make joining this to a map easier and just re
 
 ### Task 17: Find the latest data for Maryland and join it to a shapefile of U.S. counties
 **Task** Run the following code. How many rows in the counties dataframe?
-**Answer**
+**Answer** 3233. 
 
 ```{r}
 current <- maryland %>% summarize(max(date))
@@ -323,7 +324,7 @@ Since we have every county in the United States in our counties map layer, we ca
 
 ### Task 18: Filter our data to just Maryland
 **Task** Run the following code. How many rows in the mdcounties dataframe?
-**Answer**
+**Answer** 24.
 
 ```{r}
 mdcounties <- counties %>% filter(STATEFP == 24)
@@ -333,7 +334,7 @@ So now, we have a geographic dataframe that has both the county shapes and the n
 
 ### Task 19: Make a map
 **Task** Run the following code and describe what the map is showing.
-**Answer**
+**Answer** Which counties have the most covid cases. 
 
 ```{r}
 ggplot() +

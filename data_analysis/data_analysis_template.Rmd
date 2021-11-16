@@ -48,7 +48,6 @@ In this section, describe the source of the data, write a basic data dictionary 
 ```{r}
 # Load required data
 police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-shootings-data.csv")
-homicides <- read_csv("data/data-homicides-master/homicide-data.csv")
 
 ## census api key
 census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", overwrite = TRUE)
@@ -62,21 +61,28 @@ census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", ove
 ## trying to make a map to generally understand where the shootings are
 ## getting some county data
 counties <- counties() 
-usa_counties <- counties 
+usa_counties <- counties %>%
+  filter (STATEFP < "57")
 
 ## adding a geometry columns to police shootings
+
 police_shootings_geom <- police_shootings %>%
-  mutate(geometry = c(latitude, longitude))
+  mutate(geometry = paste0(latitude, longitude))
+
+police_shootings_geom
 
 ## above did not work 
  
+
+
 ## mapping all the counties
 
 ## this is not really working rn but I am trying lol
 
 ggplot() + 
+  geom_sf(police_shootings_geom)
+  geom_point(data=police_shootings, aes(x=longitude, y=latitude)) +
   geom_sf(data=usa_counties) + 
-  geom_sf(data=police_shootings) +
   theme_minimal() +
   geometry = geometry
 
