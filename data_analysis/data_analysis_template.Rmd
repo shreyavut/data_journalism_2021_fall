@@ -60,6 +60,8 @@ census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", ove
 
 ## Working with the data 
 
+## Deliverable 3 Summary: This week, we spent most of our time figuring out how to reverse geocode the coordinates given by the Washington Post so that we can eventually retrieve characteristics about the neighborhoods (census tracts) that the shootings occur in. Right now, we don’t have any particular findings, but now that we have geoid as its own separate column within our data, we’ll be able to call in census data via tidycensus and other packages and potentially join our tables in order to better narrow down the characteristics of neighborhoods that police shootings occur in more often. From there, we’ll have to do a little bit of sorting and filtering to better understand the data. 
+
 ``` {r}
 ## trying to make a map to generally understand where the shootings are
 ## getting some county data
@@ -113,7 +115,13 @@ for (row_number in 1:nrow(police_shootings)) {
 
 write_rds(police_shootings_sf, "data/geocoded_results.rds")
 
-glimpse(census_results)
+
+## testingggggg
+read_rds("data/geocoded_results_2500.rds")
+## nice!
+
+
+### some mapping stuff below, is separate from the for loop
 
 
 ## above did not work 
