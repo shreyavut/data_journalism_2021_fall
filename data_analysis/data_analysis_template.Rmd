@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis Project"
-author: "michael purdie"
+author: "michael purdie, kylie rau, shreya vuttaluru"
 date: "11/14/21"
 output:
   html_document:
@@ -37,6 +37,9 @@ library(tidycensus)
 install.packages("usmap")
 library(usmap)
 
+install.packages("censusxy")
+library(censusxy)
+
 ```
 
 ## Load and Cleaning Data
@@ -64,16 +67,58 @@ counties <- counties()
 usa_counties <- counties %>%
   filter (STATEFP < "57")
 
-## adding a geometry columns to police shootings
+## trying to fuck around with census xy
 
-police_shootings_geom <- police_shootings %>%
-  mutate(geometry = paste0(latitude, longitude))
+police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-shootings-data.csv") %>%
+    filter(!is.na(longitude)) 
 
-police_shootings_geom
+## ok so it seems like we can only do one lat long at a time so... for loop? idk lets try
+
+## first create empty data frame
+
+police_shootings_sf <- tibble()
+
+for (row_number in 1:nrow(police_shootings)) {
+  
+  #this makes a dataframe for each
+  row_df<- police_shootings %>%
+  slice(row_number)
+  
+  #store lat and long values
+  longitude <- row_df$longitude
+  latitude <- row_df$latitude
+  census_results <- cxy_geography(longitude, latitude) %>%
+    select(Census.Tracts.GEOID) %>%
+    clean_names()
+ 
+   row_df <- row_df %>%
+     bind_cols(census_results) 
+   
+  
+  #inding some rows
+   police_shootings_sf <- police_shootings_sf %>%
+    bind_rows(row_df) 
+   
+   print(paste0("finished ", row_number, " ", Sys.time()))
+   
+   if (row_number%%500 == 0) {
+     filepath <- paste0("data/geocoded_results_", row_number, ".rds")
+     write_rds(police_shootings_sf, filepath)
+     police_shootings_sf <- as_tibble()
+     
+   }
+     
+
+}
+
+write_rds(police_shootings_sf, "data/geocoded_results.rds")
+
+glimpse(census_results)
+
 
 ## above did not work 
  
-
+cxy_geography(longitude, latitude)
 
 ## mapping all the counties
 
