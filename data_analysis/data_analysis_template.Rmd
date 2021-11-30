@@ -120,8 +120,22 @@ write_rds(police_shootings_sf, "data/geocoded_results.rds")
 read_rds("data/geocoded_results_2500.rds")
 ## nice!
 
+test_data <- read_rds("data/geocoded_results_500.rds")
+read_rds("data/geocoded_results_1000.rds")
+read_rds("data/geocoded_results_1500.rds")
+read_rds("data/geocoded_results_2000.rds")
+read_rds("data/geocoded_results_2500.rds")
+read_rds("data/geocoded_results_3000.rds")
+read_rds("data/geocoded_results_3500.rds")
+read_rds("data/geocoded_results_4000.rds")
+read_rds("data/geocoded_results_4500.rds")
 
 ### some mapping stuff below, is separate from the for loop
+
+### testing ot joining census data
+
+
+
 
 
 ## above did not work 
