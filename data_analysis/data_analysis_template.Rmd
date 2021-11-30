@@ -135,14 +135,7 @@ data9 <- read_rds("data/geocoded_results_4500.rds")
 shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, .id = NULL)
 
 ## antijoining to figure out unmatched rows
-unmatched <- anti_join(shootings_w_geoid, police_shootings, by=c("id"))
-
-
-### some mapping stuff below, is separate from the for loop
-
-
-
-## c
+unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
 
 
 ### testing of joining census data
@@ -163,8 +156,14 @@ test_census <- get_acs(geography = "tract", state="MD",
                           year= 2019)
 
 
+## pivoting to columns 
 
-## above did not work 
+pivot_wider(test_census, names_from = variable, names_sep = ".", values_from = c(estimate, moe))
+
+
+
+
+### some mapping stuff below, is separate from the for loop
  
 cxy_geography(longitude, latitude)
 

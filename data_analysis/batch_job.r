@@ -22,8 +22,10 @@ police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-sho
 
 police_shootings_sf <- tibble()
 
-for (row_number in 1:nrow(police_shootings)) {
+#for (row_number in 1:nrow(police_shootings)) {
   
+for (row_number in 4501:6410) {
+
   #this makes a dataframe for each
   row_df<- police_shootings %>%
     slice(row_number)
@@ -31,7 +33,11 @@ for (row_number in 1:nrow(police_shootings)) {
   #store lat and long values
   longitude <- row_df$longitude
   latitude <- row_df$latitude
-  census_results <- cxy_geography(longitude, latitude) %>%
+  census_results <- cxy_geography(longitude, latitude) 
+  
+  if (!is.null(census_results)) {
+  
+  census_results <- census_results %>%
     select(Census.Tracts.GEOID) %>%
     clean_names()
   
@@ -39,18 +45,22 @@ for (row_number in 1:nrow(police_shootings)) {
     bind_cols(census_results) 
   
   
-  #inding some rows
+  #binding some rows
   police_shootings_sf <- police_shootings_sf %>%
     bind_rows(row_df) 
   
   print(paste0("finished ", row_number, " ", Sys.time()))
   
-  if (row_number%%500 == 0) {
-    filepath <- paste0("data/geocoded_results_", row_number, ".rds")
-    write_rds(police_shootings_sf, filepath)
-    police_shootings_sf <- as_tibble()
+    if (row_number%%500 == 0) {
+      filepath <- paste0("data/geocoded_results_", row_number, ".rds")
+      write_rds(police_shootings_sf, filepath)
+      police_shootings_sf <- as_tibble()
+      
+  
+    }
+  } else { 
     
-  }
-  
-  
+    print(paste0("No geocode found", row_number, " ", Sys.time()))
+    
+    }
 }
