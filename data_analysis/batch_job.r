@@ -24,7 +24,7 @@ police_shootings_sf <- tibble()
 
 #for (row_number in 1:nrow(police_shootings)) {
   
-for (row_number in 4501:6410) {
+for (row_number in 6001:6410) {
 
   #this makes a dataframe for each
   row_df<- police_shootings %>%

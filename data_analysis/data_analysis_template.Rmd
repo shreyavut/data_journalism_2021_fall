@@ -129,10 +129,12 @@ data6 <- read_rds("data/geocoded_results_3000.rds")
 data7 <- read_rds("data/geocoded_results_3500.rds")
 data8 <- read_rds("data/geocoded_results_4000.rds")
 data9 <- read_rds("data/geocoded_results_4500.rds")
-
+data10 <- read_rds("data/geocoded_results_5000.rds")
+data11 <- read_rds("data/geocoded_results_5500.rds")
+data12 <- read_rds("data/geocoded_results_6000.rds")
 
 ## binding rows (making a full dataset)
-shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, .id = NULL)
+shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, .id = NULL)
 
 ## antijoining to figure out unmatched rows
 unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
