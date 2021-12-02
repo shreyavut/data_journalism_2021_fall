@@ -223,7 +223,7 @@ shootings_w_acs <- shootings_w_geoid %>%
 
 ## making an .rds dataset so it's easy for my friends to download :)
 
-write_rds(shootings_w_acs, "data/shootings_w_acs.rds")
+write_rds(shootings_w_acs, "data/new_shootings_w_acs.rds")
 
 
 x <- shootings_w_acs %>%
