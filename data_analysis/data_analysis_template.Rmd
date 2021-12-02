@@ -171,6 +171,9 @@ census_data <- rename(census_data, census_tracts_geoid = GEOID)
 shootings_w_acs <- shootings_w_geoid %>%
   left_join(census_data, by=c("census_tracts_geoid"))
 
+## making an .rds dataset so it's easy for my friends to download :)
+
+write_rds(shootings_w_acs, "data/shootings_w_acs.rds")
 
 
 ### some mapping stuff below, is separate from the for loop
