@@ -132,17 +132,19 @@ data9 <- read_rds("data/geocoded_results_4500.rds")
 data10 <- read_rds("data/geocoded_results_5000.rds")
 data11 <- read_rds("data/geocoded_results_5500.rds")
 data12 <- read_rds("data/geocoded_results_6000.rds")
+data13 <- read_rds("data/geocoded_results_6410.rds")
 
 ## binding rows (making a full dataset)
-shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, .id = NULL)
+shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, data13, .id = NULL)
 
 ## antijoining to figure out unmatched rows
 unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
 
+## so we have 1 less than the dataset, but it's Gary Brown, who was a bum geocode. 
 
 ### testing of joining census data
 
-test_census <- get_acs(geography = "tract", state="MD", 
+shootings_w_geoid <- get_acs(geography = "tract", state="MD", 
                        variables = c(popululation = "B02001_001",
                                 median.gross.rent = "B25064_001",
                                 median.household.income = "B19013_001",

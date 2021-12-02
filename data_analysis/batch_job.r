@@ -51,7 +51,7 @@ for (row_number in 6001:6410) {
   
   print(paste0("finished ", row_number, " ", Sys.time()))
   
-    if (row_number%%500 == 0) {
+    if (row_number%%6410 == 0) {
       filepath <- paste0("data/geocoded_results_", row_number, ".rds")
       write_rds(police_shootings_sf, filepath)
       police_shootings_sf <- as_tibble()
