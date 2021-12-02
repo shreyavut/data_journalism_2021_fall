@@ -184,13 +184,37 @@ black_neighborhood_shootings <- shootings_w_acs %>%
   mutate(
     pct_black = (estimate.af.am/estimate.population) * 100)  %>%
     filter(pct_black > 50) %>%
-  select(name, age, race, city, state, NAME, pct_black) %>%
+  select(name, age, date, race, city, state, NAME, pct_black) %>%
   arrange(desc(pct_black))
 
 ## 559 shootings in neighborhoods that are majority black in a dataset of 6410
 
 (559 / 6410) * 100
 ## interesting --> 8.72 percent of the total shootings were in majority black neighborhoods. 
+
+## how many of those were black people? 
+black_neighborhood_shootings %>%
+  filter(race == "B") %>%
+  summarize (
+    count = n() 
+  ) %>%
+  as_tibble()
+
+## 420 of those are black 
+(420 / 559) * 100
+## which is 75.13 percent of the shootings in Black neighborhoods
+
+
+## where were the most shootings? 
+black_neighborhood_shootings %>%
+  filter(race == "B") %>%
+  summarize (
+    count = n() 
+  ) %>%
+  as_tibble()
+
+
+## racial breakdown of the shootings
 
 
 
