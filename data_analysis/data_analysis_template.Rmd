@@ -176,7 +176,25 @@ shootings_w_acs <- shootings_w_geoid %>%
 write_rds(shootings_w_acs, "data/shootings_w_acs.rds")
 
 
-### some mapping stuff below, is separate from the for loop
+### STARTING ANALYSIS HERE: 
+
+## first looking at data for highest percentage african american tracts: 
+
+black_neighborhood_shootings <- shootings_w_acs %>%
+  mutate(
+    pct_black = (estimate.af.am/estimate.population) * 100)  %>%
+    filter(pct_black > 50) %>%
+  select(name, age, race, city, state, NAME, pct_black) %>%
+  arrange(desc(pct_black))
+
+## 559 shootings in neighborhoods that are majority black in a dataset of 6410
+
+(559 / 6410) * 100
+## interesting --> 8.72 percent of the total shootings were in majority black neighborhoods. 
+
+
+
+### some mapping stuff below, is separate.
  
 cxy_geography(longitude, latitude)
 
