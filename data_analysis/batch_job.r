@@ -24,7 +24,7 @@ police_shootings_sf <- tibble()
 
 #for (row_number in 1:nrow(police_shootings)) {
   
-for (row_number in 6001:6410) {
+for (row_number in 4001:4500) {
 
   #this makes a dataframe for each
   row_df<- police_shootings %>%
@@ -33,7 +33,8 @@ for (row_number in 6001:6410) {
   #store lat and long values
   longitude <- row_df$longitude
   latitude <- row_df$latitude
-  census_results <- cxy_geography(longitude, latitude) 
+  census_results <- cxy_geography(longitude, latitude, benchmark = "Public_AR_Current",
+                                  vintage = "ACS2019_Current") 
   
   if (!is.null(census_results)) {
   
@@ -51,8 +52,8 @@ for (row_number in 6001:6410) {
   
   print(paste0("finished ", row_number, " ", Sys.time()))
   
-    if (row_number%%6410 == 0) {
-      filepath <- paste0("data/geocoded_results_", row_number, ".rds")
+    if (row_number%%500 == 0) {
+      filepath <- paste0("data/new_geocoded_results_", row_number, ".rds")
       write_rds(police_shootings_sf, filepath)
       police_shootings_sf <- as_tibble()
       

@@ -118,21 +118,58 @@ write_rds(police_shootings_sf, "data/geocoded_results.rds")
 
 ## testingggggg
 read_rds("data/geocoded_results_2500.rds")
-## nice!
 
-data1 <- read_rds("data/geocoded_results_500.rds")
-data2 <- read_rds("data/geocoded_results_1000.rds")
-data3 <- read_rds("data/geocoded_results_1500.rds")
-data4 <- read_rds("data/geocoded_results_2000.rds")
-data5 <- read_rds("data/geocoded_results_2500.rds")
-data6 <- read_rds("data/geocoded_results_3000.rds")
-data7 <- read_rds("data/geocoded_results_3500.rds")
-data8 <- read_rds("data/geocoded_results_4000.rds")
-data9 <- read_rds("data/geocoded_results_4500.rds")
-data10 <- read_rds("data/geocoded_results_5000.rds")
-data11 <- read_rds("data/geocoded_results_5500.rds")
-data12 <- read_rds("data/geocoded_results_6000.rds")
-data13 <- read_rds("data/geocoded_results_6410.rds")
+####### START TEST
+
+## testing new data with 2019 geocodes
+    data_test <- read_rds("data/new_geocoded_results_500.rds")
+    data_test2 <- read_rds("data/new_geocoded_results_4000.rds")
+   
+     test_census <- get_acs(geography = "tract",
+                       variables = c(population = "B01001_001", 
+                                     median.gross.rent = "B25064_001",
+                                     median.household.income = "B19013_001",
+                                     rent.burden = "B25071_001",
+                                     white = "B03002_003",
+                                     af.am = "B03002_004",
+                                     hispanic = "B03002_012",
+                                     am.ind = "B03002_005",
+                                     asian = "B03002_006",
+                                     nh.pi = "B03002_007",
+                                     multiple = "B03002_009",
+                                     other = "B03002_008"),
+                       state = state_list, 
+                       year = 2019)
+
+
+    test_census <- pivot_wider(test_census, names_from = variable, names_sep = ".", values_from = c(estimate, moe)) 
+
+    #rename column
+    test_census <- rename(test_census, census_tracts_geoid = GEOID)
+
+    #join
+    test_w_acs <- data_test %>%
+    left_join(test_census, by=c("census_tracts_geoid")
+
+    ## nice!
+    
+######### END TEST !!!!
+        
+######### Reading in data 
+
+data1 <- read_rds("data/new_geocoded_results_500.rds")
+data2 <- read_rds("data/new_geocoded_results_1000.rds")
+data3 <- read_rds("data/new_geocoded_results_1500.rds")
+data4 <- read_rds("data/new_geocoded_results_2000.rds")
+data5 <- read_rds("data/new_geocoded_results_2500.rds")
+data6 <- read_rds("data/new_geocoded_results_3000.rds")
+data7 <- read_rds("data/new_geocoded_results_3500.rds")
+data8 <- read_rds("data/new_geocoded_results_4000.rds")
+data9 <- read_rds("data/new_geocoded_results_4500.rds")
+data10 <- read_rds("data/new_geocoded_results_5000.rds")
+data11 <- read_rds("data/new_geocoded_results_5500.rds")
+data12 <- read_rds("data/new_geocoded_results_6000.rds")
+data13 <- read_rds("data/new_geocoded_results_6410.rds")
 
 ## binding rows (making a full dataset)
 shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, data13, .id = NULL)
@@ -140,9 +177,22 @@ shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, 
 ## antijoining to figure out unmatched rows
 unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
 
+
+## testing cxy_vintages
+testing <- cxy_geography(lon = -122.422,
+              lat = 37.763, 
+              benchmark = "Public_AR_Current",
+              vintage = "ACS2019_Current")
+
+
 ## so we have 1 less than the dataset, but it's Gary Brown, who was a bum geocode. 
 
 ### testing of joining census data
+
+state_list <- fips_codes %>%
+  distinct(state) %>%
+  head(51) %>%
+  as_vector()
 
 census_data <- get_acs(geography = "tract",
                        variables = c(population = "B01001_001", 
@@ -157,7 +207,7 @@ census_data <- get_acs(geography = "tract",
                                      nh.pi = "B03002_007",
                                      multiple = "B03002_009",
                                      other = "B03002_008"),
-                       state = c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"), 
+                       state = state_list, 
                        year = 2019)
 
 
@@ -175,6 +225,11 @@ shootings_w_acs <- shootings_w_geoid %>%
 
 write_rds(shootings_w_acs, "data/shootings_w_acs.rds")
 
+
+x <- shootings_w_acs %>%
+  filter(is.na(estimate.population)) %>%
+  group_by(state) %>%
+  count()
 
 ### STARTING ANALYSIS HERE: 
 
@@ -204,18 +259,42 @@ black_neighborhood_shootings %>%
 (420 / 559) * 100
 ## which is 75.13 percent of the shootings in Black neighborhoods
 
-
 ## where were the most shootings? 
+    #tract level
 black_neighborhood_shootings %>%
-  filter(race == "B") %>%
-  summarize (
-    count = n() 
+  group_by(NAME) %>%
+   summarize(
+   count = n() 
   ) %>%
-  as_tibble()
+  arrange(desc(count))
+   ## Duval County, Florida --> Jacksonville
 
+    #city level
+black_neighborhood_shootings %>%
+  group_by(city) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+
+  ## on the city level, most shootings are in Chicago, and many of them were in major cities 
 
 ## racial breakdown of the shootings
+shootings_w_acs %>%
+   group_by(race) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+## overall, white people made up more of the shootings. 
 
+## breakdown in majority black neighborhoods
+black_neighborhood_shootings %>%
+  group_by(race) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
 
 
 ### some mapping stuff below, is separate.
