@@ -225,12 +225,6 @@ shootings_w_acs <- shootings_w_geoid %>%
 
 write_rds(shootings_w_acs, "data/new_shootings_w_acs.rds")
 
-
-x <- shootings_w_acs %>%
-  filter(is.na(estimate.population)) %>%
-  group_by(state) %>%
-  count()
-
 ### STARTING ANALYSIS HERE: 
 
 ## first looking at data for highest percentage african american tracts: 
@@ -242,10 +236,10 @@ black_neighborhood_shootings <- shootings_w_acs %>%
   select(name, age, date, race, city, state, NAME, pct_black) %>%
   arrange(desc(pct_black))
 
-## 559 shootings in neighborhoods that are majority black in a dataset of 6410
+## 682 shootings in neighborhoods that are majority black in a dataset of 6410
 
-(559 / 6410) * 100
-## interesting --> 8.72 percent of the total shootings were in majority black neighborhoods. 
+(682/ 6410) * 100
+## interesting --> 10.63 percent of the total shootings were in majority black neighborhoods. 
 
 ## how many of those were black people? 
 black_neighborhood_shootings %>%
@@ -256,8 +250,8 @@ black_neighborhood_shootings %>%
   as_tibble()
 
 ## 420 of those are black 
-(420 / 559) * 100
-## which is 75.13 percent of the shootings in Black neighborhoods
+(509 / 682) * 100
+## which is 74.63 percent of the shootings in Black neighborhoods
 
 ## where were the most shootings? 
     #tract level
