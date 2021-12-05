@@ -176,7 +176,7 @@ shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, 
 
 ## antijoining to figure out unmatched rows
 unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
-
+## only one match which is Gary Brown 
 
 ## testing cxy_vintages
 testing <- cxy_geography(lon = -122.422,
@@ -187,7 +187,7 @@ testing <- cxy_geography(lon = -122.422,
 
 ## so we have 1 less than the dataset, but it's Gary Brown, who was a bum geocode. 
 
-### testing of joining census data
+### joining census data
 
 state_list <- fips_codes %>%
   distinct(state) %>%
@@ -273,7 +273,7 @@ black_neighborhood_shootings %>%
 
   ## on the city level, most shootings are in Chicago, and many of them were in major cities 
 
-## racial breakdown of the shootings
+## racial breakdown of all of the shootings
 shootings_w_acs %>%
    group_by(race) %>%
    summarize(
@@ -291,7 +291,53 @@ black_neighborhood_shootings %>%
   arrange(desc(count))
 
 
-### some mapping stuff below, is separate.
+## income breakdown !! 
+    ## Pew Research Center defines low income households as those earning below $48,500 
+    
+## general breakdown first:
+low_income_shootings <- shootings_w_acs %>%
+  filter(estimate.median.household.income < 48500) %>% 
+   summarize(
+   count = n() 
+  ) 
+## 2924 shootings out of 6409 were in low-income neighborhoods 
+(2924/6409) * 100
+## that's 45 percent !! 
+
+## where are the specific places:
+low_income_shootings %>%
+  group_by(NAME) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+
+  
+
+## white people shot in majority white neighborhoods
+white_neighborhood_shootings_white <- shootings_w_acs %>%
+filter(race == "W", estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+
+## white people shot in majority white neighborhoods
+white_neighborhood_shootings_black <- shootings_w_acs %>%
+filter(race == "B", estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+
+
+## total people shot in majority white neighborhoods
+majority_white_neighborhood_shootings <- shootings_w_acs %>%
+filter(estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+
+1887/3599 = 0.5243123 ##will be different with correct data
+= 52.5% of people shot in majority white neighborhoods are white.
+
+527/3599 = 0.1464296 ##will be different with correct data
+= 14.6% of people shot in majority white neighborhoods are black.
+
+
+
+
+
+### some mapping stuff below, is separate and none of it is working right now. 
  
 cxy_geography(longitude, latitude)
 
