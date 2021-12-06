@@ -312,7 +312,6 @@ low_income_shootings %>%
   ) %>%
   arrange(desc(count))
 
-  
 
 ## white people shot in majority white neighborhoods
 white_neighborhood_shootings_white <- shootings_w_acs %>%
