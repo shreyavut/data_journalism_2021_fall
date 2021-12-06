@@ -334,7 +334,127 @@ filter(estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + esti
 = 14.6% of people shot in majority white neighborhoods are black.
 
 
+## breakdown in majority black neighborhoods
+black_neighborhood_shootings %>%
+  group_by(race) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+  ##black people made up the majority
+  
+## white people shot in majority white neighborhoods
+white_neighborhood_shootings_white <- shootings_w_acs %>%
+filter(race == "W", estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+white_neighborhood_shootings_white
+  ##2573 people
+## black people shot in majority white neighborhoods
+white_neighborhood_shootings_black <- shootings_w_acs %>%
+filter(race == "B", estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+white_neighborhood_shootings_black
+  ##709 people
+## total people shot in majority white neighborhoods
+majority_white_neighborhood_shootings <- shootings_w_acs %>%
+filter(estimate.white > estimate.af.am + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+majority_white_neighborhood_shootings
+  ##4856 people
+2573/4856 = 0.52986*100 
+    = 52.986% of people shot in majority white neighborhoods are white. 
+709/4856 = 0.1460049*100
+    = 14.6% of people shot in majority white neighborhoods are black. 
+## black people shot in majority black neighborhoods
+black_neighborhood_shootings_black <- shootings_w_acs %>%
+filter(race == "B", estimate.af.am > estimate.white + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+black_neighborhood_shootings_black
+  ##663 people
+## white people shot in majority black neighborhoods
+black_neighborhood_shootings_white <- shootings_w_acs %>%
+filter(race == "W", estimate.af.am > estimate.white + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+black_neighborhood_shootings_white
+  ##144 people
+## total people shot in majority black neighborhoods
+majority_black_neighborhood_shootings <- shootings_w_acs %>%
+filter(estimate.af.am > estimate.white + estimate.am.ind + estimate.asian + estimate.nh.pi + estimate.other)
+majority_black_neighborhood_shootings
+  ##1029 people
+144/1029 = 0.1399417*100 
+    = 13.4% of people shot in majority black neighborhoods are white. 
+663/1029 = 0.6443149*100
+    = 64.4% of people shot in majority black neighborhoods are black. 
+```
 
+
+### Income Analysis
+
+``` {r}
+## income breakdown !! 
+    ## Pew Research Center defines low-income households as those earning below $48,500 
+    ## Pew Research Center defines high-income households as those earning above $145,500
+    
+## general low-income breakdown first:
+low_income_shootings <- new_shootings_w_acs %>%
+  filter(estimate.median.household.income < 48500)
+low_income_shootings %>% 
+   summarize(
+   count = n() 
+  ) 
+  ## 2924 shootings out of 6409 were in low-income neighborhoods 
+(2924/6409) * 100
+  = 45.6% of shootings were in low-income neighborhoods.
+## where are the specific places:
+low_income_shootings %>%
+  group_by(NAME) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+  ##none of these seem to be significant
+## white people shot in majority low-income neighborhoods
+low_income_neighborhood_shootings_white <- new_shootings_w_acs %>%
+filter(race == "W", estimate.median.household.income < 48500)
+low_income_neighborhood_shootings_white
+  ##1108 people
+## black people shot in majority low-income neighborhoods
+low_income_neighborhood_shootings_black <- new_shootings_w_acs %>%
+filter(race == "B", estimate.median.household.income < 48500)
+low_income_neighborhood_shootings_black
+  ##865 people
+1108/2924 = 0.378933*100 
+    = 37.9% of people shot in majority low-income neighborhoods are white. 
+865/2924 = 0.2958276*100
+    = 29.6% of people shot in majority low-income neighborhoods are black. 
+## general high-income breakdown
+high_income_shootings <- new_shootings_w_acs %>%
+  filter(estimate.median.household.income > 145500)
+high_income_shootings %>% 
+   summarize(
+   count = n() 
+  ) 
+  ## 59 shootings out of 6409 were in high-income neighborhoods 
+(59/6409) * 100
+  = 0.92% of shootings were in high-income neighborhoods.
+## where are the specific places:
+high_income_shootings %>%
+  group_by(NAME) %>%
+   summarize(
+   count = n() 
+  ) %>%
+  arrange(desc(count))
+  ##none of these seem to be significant, except maybe top 3 in Texas?
+## white people shot in majority high-income neighborhoods
+high_income_neighborhood_shootings_white <- new_shootings_w_acs %>%
+filter(race == "W", estimate.median.household.income > 145500)
+high_income_neighborhood_shootings_white
+  ##33 people
+## black people shot in majority high-income neighborhoods
+high_income_neighborhood_shootings_black <- new_shootings_w_acs %>%
+filter(race == "B", estimate.median.household.income > 145500)
+high_income_neighborhood_shootings_black
+  ##13 people
+33/59 = 0.378933*100 
+    = 55.9% of people shot in majority high-income neighborhoods are white. 
+13/59 = 0.2958276*100
+    = 22.0% of people shot in majority high-income neighborhoods are black. 
 
 
 ### some mapping stuff below, is separate and none of it is working right now. 
