@@ -55,6 +55,7 @@ police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-sho
 ## census api key
 census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", overwrite = TRUE)
 
+variables <- load_variables("acs5", year=2019)
 
 ```
 
@@ -137,6 +138,7 @@ read_rds("data/geocoded_results_2500.rds")
                                      asian = "B03002_006",
                                      nh.pi = "B03002_007",
                                      multiple = "B03002_009",
+                                     poverty_level ="B06012_002",
                                      other = "B03002_008"),
                        state = state_list, 
                        year = 2019)
@@ -206,6 +208,7 @@ census_data <- get_acs(geography = "tract",
                                      asian = "B03002_006",
                                      nh.pi = "B03002_007",
                                      multiple = "B03002_009",
+                                     poverty_level ="B06012_002",
                                      other = "B03002_008"),
                        state = state_list, 
                        year = 2019)
