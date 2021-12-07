@@ -176,6 +176,15 @@ data13 <- read_rds("data/new_geocoded_results_6410.rds")
 ## binding rows (making a full dataset)
 shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, data13, .id = NULL)
 
+### grouping the shootings by tract:
+grouped_shootings_w_geoid <- shootings_w_geoid %>%
+  group_by(census_tracts_geoid) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+
 ## antijoining to figure out unmatched rows
 unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
 ## only one match which is Gary Brown 
@@ -221,12 +230,37 @@ census_data <- pivot_wider(census_data, names_from = variable, names_sep = ".", 
 census_data <- rename(census_data, census_tracts_geoid = GEOID)
 
 #join
-shootings_w_acs <- shootings_w_geoid %>%
-  left_join(census_data, by=c("census_tracts_geoid"))
+grouped_shootings_w_acs <- census_data %>%
+  left_join(grouped_shootings_w_geoid, by=c("census_tracts_geoid")) %>%
+  mutate(
+    shooting_y_n = 
+      if_else(
+      (is.na(count)), "n", "y"
+    )
+  ) %>%
+  arrange(desc(count))
+
+
+### joining demographic columns
+
+#adding columns
+grouped_shootings_w_acs <- grouped_shootings_w_acs %>%
+  mutate(tract_majority_black = case_when((estimate.af.am/estimate.population > .5) ~ "y",
+                                          (estimate.af.am/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_majority_white = case_when((estimate.white/estimate.population > .5) ~ "y",
+                                          (estimate.white/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_majority_poor = case_when((estimate.poverty_level/estimate.population > .5) ~ "y",
+                                         (estimate.poverty_level/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_low_income = case_when((estimate.median.household.income > 48500) ~ "y",
+                                         (estimate.median.household.income <= 48500) ~ "n"))
+
 
 ## making an .rds dataset so it's easy for my friends to download :)
 
 write_rds(shootings_w_acs, "data/new_shootings_w_acs.rds")
+write_rds(grouped_shootings_w_acs, "data/grouped_shootings_w_acs.rds")
+
+
 
 ### STARTING ANALYSIS HERE: 
 
