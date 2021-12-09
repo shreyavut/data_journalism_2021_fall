@@ -205,6 +205,9 @@ state_list <- fips_codes %>%
   head(51) %>%
   as_vector()
 
+fips_table <- fips_codes %>%
+  distinct(state,state_code)
+
 census_data <- get_acs(geography = "tract",
                        variables = c(population = "B01001_001", 
                                      median.gross.rent = "B25064_001",
@@ -229,8 +232,12 @@ census_data <- pivot_wider(census_data, names_from = variable, names_sep = ".", 
 #rename column
 census_data <- rename(census_data, census_tracts_geoid = GEOID)
 
+census_data_with_state <- census_data %>%
+  mutate(state_code = str_sub(census_tracts_geoid, start=1L, end=2L)) %>%
+  left_join(fips_table)
+
 #join
-grouped_shootings_w_acs <- census_data %>%
+grouped_shootings_w_acs <- census_data_with_state %>%
   left_join(grouped_shootings_w_geoid, by=c("census_tracts_geoid")) %>%
   mutate(
     shooting_y_n = 
@@ -249,8 +256,19 @@ grouped_shootings_w_acs <- grouped_shootings_w_acs %>%
                                           (estimate.af.am/estimate.population <= .5) ~ "n")) %>%
   mutate(tract_majority_white = case_when((estimate.white/estimate.population > .5) ~ "y",
                                           (estimate.white/estimate.population <= .5) ~ "n")) %>%
-  mutate(tract_majority_poor = case_when((estimate.poverty_level/estimate.population > .5) ~ "y",
-                                         (estimate.poverty_level/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_majority_poor = case_when((estimate.poverty_level/estimate.population > .25) ~ "y",
+                                         (estimate.poverty_level/estimate.population <= .25) ~ "n")) %>%
+  mutate(tract_low_income = case_when((estimate.median.household.income > 48500) ~ "y",
+                                         (estimate.median.household.income <= 48500) ~ "n"))
+
+
+new_shootings_w_acs <- new_shootings_w_acs %>%
+  mutate(tract_majority_black = case_when((estimate.af.am/estimate.population > .5) ~ "y",
+                                          (estimate.af.am/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_majority_white = case_when((estimate.white/estimate.population > .5) ~ "y",
+                                          (estimate.white/estimate.population <= .5) ~ "n")) %>%
+  mutate(tract_majority_poor = case_when((estimate.poverty_level/estimate.population > .25) ~ "y",
+                                         (estimate.poverty_level/estimate.population <= .25) ~ "n")) %>%
   mutate(tract_low_income = case_when((estimate.median.household.income > 48500) ~ "y",
                                          (estimate.median.household.income <= 48500) ~ "n"))
 
@@ -498,6 +516,21 @@ high_income_neighborhood_shootings_black
 ## All low_income tracts
 ### 1. What percentage of shootings happen in low_income tracts?
 
+
+x <- grouped_shootings_w_acs %>%
+  filter(shooting_y_n == "y") %>%
+  filter(!is.na(tract_low_income)) %>%
+  group_by(state,tract_low_income) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(total_shootings = sum(count)) %>%
+  mutate(pct_shootings = count/total_shootings) %>%
+  ungroup() %>%
+  select(state,tract_low_income,pct_shootings) %>%
+  pivot_wider(names_from=tract_low_income,values_from=pct_shooting)
+
+
 new_shootings_w_acs %>% 
   filter(tract_low_income == "y") %>%
    summarize(
@@ -512,12 +545,16 @@ new_shootings_w_acs %>%
 
 ### 2. What percentage of all U.S. census tracts are low_income
 
-grouped_shootings_w_acs %>% 
-  group_by(tract_low_income) %>%
+
+grouped_shootings_w_acs %>%
   filter(!is.na(tract_low_income)) %>%
-  summarize(
-    count = n()
-  )
+  group_by(tract_low_income) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(total_tracts = sum(count)) %>%
+  mutate(pct_tracts = count/total_tracts)
+  
 
 (49283	/ (49283 + 22749)) * 100
 
@@ -580,16 +617,147 @@ new_shootings_w_acs %>%
   summarize(count = n())
   #90 
 90/6409 = .01404275*100
-    = 1.4% of shootings happen in tracts where the majority of people are below the poverty line.
+    = 1.4% of shootings happen in tracts where the majority of people are below the poverty line
+
 
 #2. What percentage of all U.S. census tracts have a majority of the population below the poverty line?
 grouped_shootings_w_acs %>%
   filter(tract_majority_poor == "y") %>%
   summarize(count = n())
   #745 
-745/73056 = .01019766*100
-    = 1.0% of all U.S. census tracts are low income and majority white.
+(10752/73056) *100
+
+### 14 percent of tracts are poor
+
+grouped_shootings_w_acs %>%
+  filter(tract_majority_poor == "y", shooting_y_n == "y") %>%
+  summarize(count = n())
+
+(1351/73056) * 100
+
+## 1.84 pct of majority poor census tracts have also had a shooting
+
+## 1.0% of all U.S. census tractsare low income and majority white.
+
+### poor and majority black
+below_pov_black <- new_shootings_w_acs %>%
+filter(
+tract_majority_black == "y",
+tract_majority_poor == "y"
+)
+(395/6409) * 100
+### 6.16 percent !
+
+### how many tracts have signif. poverty and are majority black
+grouped_shootings_w_acs %>%
+  filter(tract_majority_poor == "y" & tract_majority_black == "y") %>%
+  summarize(count = n())
+
+(3192/73056) * 100
 
 
+### majority black census tracts 
+
+grouped_shootings_w_acs %>%
+  filter(!is.na(tract_majority_black)) %>%
+  group_by(tract_majority_black) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(total_black_tracts = sum(count)) %>%
+  mutate(pct_black = count/total_black_tracts)
+
+grouped_shootings_w_acs %>%
+  filter(shooting_y_n == "y") %>%
+  filter(!is.na(tract_majority_black)) %>%
+  group_by(tract_majority_black) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(total_black_tracts = sum(count)) %>%
+  mutate(pct_black = count/total_black_tracts)
+
+### black people killed in white neighborhoods
+
+
+## "Body Cam" Analysis
+
+
+## people shot in white neighborhoods with body cam 
+
+white_body_cam <- new_shootings_w_acs %>% 
+  filter(tract_majority_white == "y") %>%
+  group_by(race, body_camera) %>%
+  summarize(
+    count = n()
+  ) %>% 
+  mutate(tracts_by_race = sum(count)) %>%
+  mutate(pct_tracts = count/tracts_by_race)
+
+
+## people shot in black neighborhoods with body cam
+
+black_body_cam <- new_shootings_w_acs %>% 
+  filter(tract_majority_black == "y") %>%
+  group_by(race, body_camera) %>%
+  summarize(
+    count = n()
+  ) %>% 
+  mutate(total_black_tracts = sum(count)) %>%
+  mutate(pct_black = count/total_black_tracts)
+
+
+police_shootings_by_race <- new_shootings_w_acs %>%
+  group_by(race) %>%
+  summarize(
+    total_per_race = n()
+  ) 
+    
+police_shootings_armed_with_toy <- new_shootings_w_acs %>%
+  filter(str_detect(armed, "toy")) %>%
+  group_by(race) %>%
+  summarize(
+    total_armed_with_toy = n()
+  ) 
+
+police_shootings_armed_with_toy_per_race <- police_shootings_by_race %>%
+  left_join(police_shootings_armed_with_toy) %>%
+  mutate(total_armed_with_toy = replace_na(total_armed_with_toy,0)) %>%
+  mutate(percent_armed_with_toy_per_race = total_armed_with_toy/total_per_race*100) %>%
+  arrange(desc(percent_armed_with_toy_per_race))
+
+new_shootings_w_acs %>%
+  filter(tract_majority_black == "y" & str_detect(armed, "toy"))
+  #16 toy shootings in black neighborhoods
+  ##= 2.35% of shootings in Black neighborhoods involve the victim being armed with a toy. 
+
+new_shootings_w_acs %>%
+  filter(tract_majority_white == "y" & str_detect(armed, "toy"))
+  #132 toy  shooting in white neighborhoods
+  ##= 3.67% of shootings in white neighborhoods involve the victim being armed with a toy.
+
+### are a higher percentage of people killed in black neighborhoods fleeing, compared with white neighborhoods
+new_shootings_w_acs %>%
+  group_by(flee, tract_majority_black) %>%
+  summarize(
+    count = n()
+  )
+
+shootings_flee <- new_shootings_w_acs %>%
+  mutate(flee_y_n = 
+           if_else(flee == "Not fleeing", "n", "y")) %>%
+           group_by(flee_y_n, tract_majority_black) %>%
+          summarize(
+           count = n()
+  ) %>%
+  filter(!is.na(flee_y_n)) %>%
+  filter(!is.na(tract_majority_black)) %>%
+  mutate(flee_total = sum(count)) %>%
+  mutate(pct_flee = count/flee_total)
+
+
+### change over time 
+
+### state level variations in shootings
 
 ```
