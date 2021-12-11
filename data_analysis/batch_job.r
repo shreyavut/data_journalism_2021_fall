@@ -24,7 +24,8 @@ police_shootings_sf <- tibble()
 
 #for (row_number in 1:nrow(police_shootings)) {
   
-for (row_number in 4001:4500) {
+### NOTE: This will only produce the first 6,000 records. For the last 410 records, we will meed to 
+for (row_number in 1:6000) {
 
   #this makes a dataframe for each
   row_df<- police_shootings %>%

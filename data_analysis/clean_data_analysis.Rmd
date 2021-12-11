@@ -1,0 +1,128 @@
+---
+title: "Data Analysis Project: final"
+names: Michael Purdie, Kylie Rau, Shreya Vuttaluru 
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+
+This is where we load our libraries!
+```{r}
+#essential libraries
+library(tidyverse)
+library(janitor)
+library(lubridate)
+#additional libraries 
+library(sf)
+library(tigris)
+library(tidycensus)
+
+install.packages("usmap")
+library(usmap)
+
+install.packages("censusxy")
+library(censusxy)
+```
+
+
+LOADING DATA: Here, we're using the Washington Post Police Shootings database, and will join it to census data. 
+```{r}
+## Load required data
+police_shootings <- read_csv("data/data-police-shootings-master/fatal-police-shootings-data.csv")
+
+## census api key
+census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", overwrite = TRUE)
+
+## acs variables
+variables <- load_variables("acs5", year=2019)
+```
+
+CLEANING DATA: We created a for loop to reverse geocode the shootings based on latitude and longitude. The for loop is in the attached file called batch_job.r, Below are the new databases. One is grouped by census tract, and tells us whether or not there was a shooting in a census tract. The other tells us each individual shooting. 
+``` {r}
+
+### loading the files from batch_job.r 
+
+data1 <- read_rds("data/new_geocoded_results_500.rds")
+data2 <- read_rds("data/new_geocoded_results_1000.rds")
+data3 <- read_rds("data/new_geocoded_results_1500.rds")
+data4 <- read_rds("data/new_geocoded_results_2000.rds")
+data5 <- read_rds("data/new_geocoded_results_2500.rds")
+data6 <- read_rds("data/new_geocoded_results_3000.rds")
+data7 <- read_rds("data/new_geocoded_results_3500.rds")
+data8 <- read_rds("data/new_geocoded_results_4000.rds")
+data9 <- read_rds("data/new_geocoded_results_4500.rds")
+data10 <- read_rds("data/new_geocoded_results_5000.rds")
+data11 <- read_rds("data/new_geocoded_results_5500.rds")
+data12 <- read_rds("data/new_geocoded_results_6000.rds")
+data13 <- read_rds("data/new_geocoded_results_6410.rds")
+
+## binding rows (making a full dataset)
+shootings_w_geoid <- bind_rows(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, data13, .id = NULL)
+
+### grouping the shootings by tract:
+grouped_shootings_w_geoid <- shootings_w_geoid %>%
+  group_by(census_tracts_geoid) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+
+## antijoining to figure out unmatched rows
+unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
+## only one match which is Gary Brown 
+
+### joining census data
+
+state_list <- fips_codes %>%
+  distinct(state) %>%
+  head(51) %>%
+  as_vector()
+
+fips_table <- fips_codes %>%
+  distinct(state,state_code)
+
+census_data <- get_acs(geography = "tract",
+                       variables = c(population = "B01001_001", 
+                                     median.gross.rent = "B25064_001",
+                                     median.household.income = "B19013_001",
+                                     rent.burden = "B25071_001",
+                                     white = "B03002_003",
+                                     af.am = "B03002_004",
+                                     hispanic = "B03002_012",
+                                     am.ind = "B03002_005",
+                                     asian = "B03002_006",
+                                     nh.pi = "B03002_007",
+                                     multiple = "B03002_009",
+                                     poverty_level ="B06012_002",
+                                     other = "B03002_008"),
+                       state = state_list, 
+                       year = 2019)
+
+
+#PIVOT
+census_data <- pivot_wider(census_data, names_from = variable, names_sep = ".", values_from = c(estimate, moe)) 
+
+#rename column
+census_data <- rename(census_data, census_tracts_geoid = GEOID)
+
+census_data_with_state <- census_data %>%
+  mutate(state_code = str_sub(census_tracts_geoid, start=1L, end=2L)) %>%
+  left_join(fips_table)
+
+#join
+grouped_shootings_w_acs <- census_data_with_state %>%
+  left_join(grouped_shootings_w_geoid, by=c("census_tracts_geoid")) %>%
+  mutate(
+    shooting_y_n = 
+      if_else(
+      (is.na(count)), "n", "y"
+    )
+  ) %>%
+  arrange(desc(count))
+
+
+```
+
