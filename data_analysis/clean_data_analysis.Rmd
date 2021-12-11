@@ -314,17 +314,13 @@ join <- pct_all_tracts_state %>%
 
 ## Let's do some further digging in each state. 
 
-### IL --> 
-
-  ## in what tracts are the most shootings happening?
+### IL -->  ## in what tracts are the most shootings happening?
 
   ## what's the demographic breakdown of those tracts?
 
   ## anything interesting about police departments in that area (this is a google question)
 
 ### DC --> in what tracts are the most shootings happening?
-
-  ## in what tracts are the most shootings happening?
 
   ## what's the demographic breakdown of those tracts?
 
@@ -333,16 +329,12 @@ join <- pct_all_tracts_state %>%
 
 ### MO --> in what tracts are the most shootings happening?
 
-   ## in what tracts are the most shootings happening?
-
   ## what's the demographic breakdown of those tracts?
 
   ## anything interesting about police departments in that area (this is a google question)
 
 
 ### NJ --> in what tracts are the most shootings happening? 
-
-   ## in what tracts are the most shootings happening?
 
   ## what's the demographic breakdown of those tracts?
 
