@@ -14,6 +14,7 @@ This is where we load our libraries!
 library(tidyverse)
 library(janitor)
 library(lubridate)
+library(stringr)
 #additional libraries 
 library(sf)
 library(tigris)
@@ -314,6 +315,8 @@ join <- pct_all_tracts_state %>%
 
 ## from this, we can see that there's a pretty stark jump from overall percent of black and poor census tracts to the percent of black and poor tracts with shootings in them, especially in states like IL, DC, MO, and NJ. This could potentially explained by the prevalence of cities like Chicago, Newark, Camden, and St. Louis with a high black population. 
 
+### but, there's 
+
 ## Let's do some further digging in each state. 
 
 ### IL -->  ## in what tracts are the most shootings happening?
@@ -335,20 +338,6 @@ il_shootings <- new_shootings_w_acs  %>%
   ) %>%
   arrange(desc(count))
 ### this makes sense --> 45 shootings in Chicago, but also notably 4 shootings in Rockford and 3 in Joliet and Peoria
-
-  ## what's the demographic breakdown of those tracts?
-    ## let's string_detect for Cook County and look at the demographic breakdown of tracts that had shootings
-    cook_county_shootings <- grouped_shootings_w_acs  %>%
-     filter(NAME == str_detect(NAME, "~Cook County, Illinois")) %>%
-      group_by(NAME) %>%
-      summarize(
-      count = n()
-      ) %>%
-      arrange(desc(count))
-      
-  
-  ## anything interesting about police departments in that area (this is a google question)
-
 
 ### DC --> in what tracts are the most shootings happening?
 dc_shootings <- new_shootings_w_acs  %>%
@@ -386,7 +375,6 @@ mo_shootings <- new_shootings_w_acs  %>%
 
   ## anything interesting about police departments in that area (this is a google question)
 
-
 ### NJ --> in what tracts are the most shootings happening? 
 nj_shootings <- new_shootings_w_acs  %>%
   filter(state == "NJ") %>%
@@ -412,6 +400,99 @@ nj_shootings <- new_shootings_w_acs  %>%
 
   ## anything interesting about police departments in that area (this is a google question)
 
+
+new_shootings_w_acs_county <- grouped_shootings_w_acs %>%
+  mutate(name_copy = NAME) %>%
+  separate(name_copy, into=c("tract","county", "state") , sep=",")
+
+#### looking at the shootings in tracts at the county level
+
+## all counties that have majority black and poor tracts
+county_by_poverty_black_shooting <- new_shootings_w_acs_county %>%
+  filter(!is.na(tract_majority_poor)) %>%
+  group_by(state, county, shooting_y_n, tract_majority_poor, tract_majority_black) %>%
+  summarise(
+    count=n()
+  ) 
+
+## all counties with black and poor tracts with shootings in them 
+pct_tracts_with_shootings_county<- county_by_poverty_black_shooting %>%
+  filter(shooting_y_n == "y") %>%
+  mutate(majority_poor_black = case_when(
+    tract_majority_black == "y" &
+    tract_majority_poor == "y" ~ "y", 
+    TRUE ~ "n"
+  )) %>%
+  ungroup() %>%
+  select(state, county, majority_poor_black, count) %>%
+  group_by(state, county, majority_poor_black) %>%
+  summarize(
+    count = sum(count)
+  ) %>%
+pivot_wider(names_from="majority_poor_black", values_from="count") %>%
+  mutate(pct_majority_poor_black = y / (n + y)) %>%
+  arrange(desc(pct_majority_poor_black)) %>%
+  rename(
+    n_shootings_tracts = n,
+    y_shootings_tracts = y,
+    pct_shootings_maj_black_poor = pct_majority_poor_black
+  )
+  
+### this dataframe tells us about the demographics of all tracts within a that are majority black and poor--not just ones with shootings!.
+pct_all_tracts_county <- county_by_poverty_black_shooting %>%
+  mutate(majority_poor_black = case_when(
+    tract_majority_black == "y" &
+    tract_majority_poor == "y" ~ "y", 
+    TRUE ~ "n"
+  )) %>%
+  ungroup() %>%
+  select(state, county, majority_poor_black, count) %>%
+  group_by(state, county, majority_poor_black) %>%
+  summarize(
+    count = sum(count)
+  ) %>%
+pivot_wider(names_from="majority_poor_black", values_from="count") %>%
+  mutate(pct_majority_poor_black = y / (n + y)) %>%
+  arrange(desc(pct_majority_poor_black)) %>%
+  rename(n_all_tracts = n,
+         y_all_tracts = y,
+         pct_all_maj_poor_black = pct_majority_poor_black)
+
+### this is a joined county dataframe so we can compare the percent of majority black/poor tracts WITH shootings to the percent of black/poor tracts overall within a state.
+
+join_county <- pct_all_tracts_county %>%
+  left_join(pct_tracts_with_shootings_county) %>%
+  mutate(difference_in_shootings = pct_all_maj_poor_black - pct_shootings_maj_black_poor) %>%
+  arrange(difference_in_shootings) %>%
+  filter(!is.na(y_all_tracts))%>%
+  mutate(state = str_trim(state, side="both"))
+
+### let's look at the top 100 most populous counties. 
+
+large_pop_counties <- get_acs(geography = "county",
+                       variables = c(population = "B01001_001"),
+                        state = state_list, 
+                        year = 2019)
+
+#PIVOT
+large_pop_counties <- pivot_wider(large_pop_counties, names_from = variable, names_sep = ".", values_from = c(estimate, moe)) 
+
+#rename columns
+large_pop_counties <- rename(large_pop_counties, census_tracts_geoid = GEOID, population = estimate.population)
+
+#arranging  
+top_100_largest_counties <- large_pop_counties %>%
+  separate(NAME, into=c("county", "state") , sep=",")
+
+top_100_largest_counties <- top_100_largest_counties %>%
+  arrange(desc(population)) %>%
+  head(100)
+
+## left_joining this to join_counties ! 
+
+largest_counties_maj_black_poor_shootings <- top_100_largest_counties %>%
+  left_join(join_county)
+                       
 
 ### Here's a per-capita analysis. 
 

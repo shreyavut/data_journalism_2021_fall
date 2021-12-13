@@ -891,7 +891,8 @@ join <- pct_all_tracts_state %>%
   arrange(difference_in_shootings) %>%
   filter(!is.na(y_all_tracts))
 
-
+new_shootings_w_acs %>%
+  filter(county == "Orleans Parish") 
 
 
 ```
