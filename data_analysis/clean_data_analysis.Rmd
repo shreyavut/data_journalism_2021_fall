@@ -76,13 +76,15 @@ unmatched <- anti_join(police_shootings, shootings_w_geoid, by=c("id"))
 
 ### joining census data
 
+fips_codes
+
 state_list <- fips_codes %>%
   distinct(state) %>%
   head(51) %>%
   as_vector()
 
 fips_table <- fips_codes %>%
-  distinct(state,state_code)
+  distinct(state,state_code, county_code)
 
 census_data <- get_acs(geography = "tract",
                        variables = c(population = "B01001_001", 
@@ -315,14 +317,58 @@ join <- pct_all_tracts_state %>%
 ## Let's do some further digging in each state. 
 
 ### IL -->  ## in what tracts are the most shootings happening?
+il_shootings <- new_shootings_w_acs  %>%
+  filter(state == "IL") %>%
+  group_by(NAME) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+## surprise! cook county is overrepresented (likely because it houses chicago)
+
+il_shootings <- new_shootings_w_acs  %>%
+  filter(state == "IL") %>%
+  group_by(city) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+### this makes sense --> 45 shootings in Chicago, but also notably 4 shootings in Rockford and 3 in Joliet and Peoria
 
   ## what's the demographic breakdown of those tracts?
+    ## let's string_detect for Cook County and look at the demographic breakdown of tracts that had shootings
+    
+    cook_county_shootings <- new_shootings_w_acs  %>%
+     filter(NAME == str_detect(NAME, "Cook County")) %>%
+      group_by(NAME) %>%
+      summarize(
+      count = n()
+      ) %>%
+      arrange(desc(count))
+      
+    
 
   ## anything interesting about police departments in that area (this is a google question)
 
-### DC --> in what tracts are the most shootings happening?
 
-  ## what's the demographic breakdown of those tracts?
+### DC --> in what tracts are the most shootings happening?
+dc_shootings <- new_shootings_w_acs  %>%
+  filter(state == "DC") %>%
+  group_by(NAME) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+## not super meaningful since everything is in DC, but there are a couple of standout tracts with more than one shooting. 
+
+## what's the demographic breakdown of those tracts?
+  
+  #62.02
+
+  #72
+
+  #78.08
 
   ## anything interesting about police departments in that area (this is a google question)
 
@@ -335,6 +381,25 @@ join <- pct_all_tracts_state %>%
 
 
 ### NJ --> in what tracts are the most shootings happening? 
+nj_shootings <- new_shootings_w_acs  %>%
+  filter(state == "NJ") %>%
+  group_by(NAME) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+## more shootings in a tract in bergen county, which makes sense... what happens if we group by city?
+
+nj_shootings <- new_shootings_w_acs  %>%
+  filter(state == "NJ") %>%
+  group_by(city) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+## Newark, Camden, Atlantic City, and Paterson. Makes sense!
 
   ## what's the demographic breakdown of those tracts?
 
