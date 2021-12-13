@@ -338,17 +338,15 @@ il_shootings <- new_shootings_w_acs  %>%
 
   ## what's the demographic breakdown of those tracts?
     ## let's string_detect for Cook County and look at the demographic breakdown of tracts that had shootings
-    
-    cook_county_shootings <- new_shootings_w_acs  %>%
-     filter(NAME == str_detect(NAME, "Cook County")) %>%
+    cook_county_shootings <- grouped_shootings_w_acs  %>%
+     filter(NAME == str_detect(NAME, "~Cook County, Illinois")) %>%
       group_by(NAME) %>%
       summarize(
       count = n()
       ) %>%
       arrange(desc(count))
       
-    
-
+  
   ## anything interesting about police departments in that area (this is a google question)
 
 
@@ -374,6 +372,15 @@ dc_shootings <- new_shootings_w_acs  %>%
 
 
 ### MO --> in what tracts are the most shootings happening?
+mo_shootings <- new_shootings_w_acs  %>%
+  filter(state == "MO") %>%
+  group_by(NAME) %>%
+  summarize(
+    count = n()
+  ) %>%
+  arrange(desc(count))
+
+## boone county and st. louis city are overrepresented here. 
 
   ## what's the demographic breakdown of those tracts?
 
