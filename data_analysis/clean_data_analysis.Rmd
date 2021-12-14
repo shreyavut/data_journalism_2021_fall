@@ -418,6 +418,48 @@ write_rds(largest_counties_maj_black_poor_shootings, "data/shootings_in_black_po
 
 ### Here's a per-capita analysis. 
 
+#making a dataframe that has county police shootings by race
+county_police_shootings_by_race <- new_shootings_w_acs  %>%
+  separate(NAME, into=c("tract", "county", "state") , sep=", ") %>%
+  mutate(NAME = paste(county, state, sep=", ")) %>%
+  group_by(NAME, race) %>%
+  summarize(count = n()) %>%
+  distinct() 
+
+#joining dataframe with county_census_data
+county_police_shootings_by_race_w_acs <- 
+  merge(x=county_police_shootings_by_race, y=county_census_data, by.x="NAME", by.y="NAME", all.x=TRUE, all.y=TRUE, sort=TRUE) %>%
+  filter(!is.na(count))
+
+#using newest dataframe to generate county per capita per race
+county_police_shootings_by_race_w_acs <- county_police_shootings_by_race_w_acs %>%
+  mutate(county_per_capita_shootings_per_race = 
+    case_when(race == "W" ~ count/estimate.white*100000,
+              race == "B" ~ count/estimate.af.am*100000,
+              race == "A" ~ count/(estimate.asian+estimate.nh.pi)*100000,
+              race == "H" ~ count/estimate.hispanic*100000,
+              race == "N" ~ count/estimate.am.ind*100000,
+              race == "O" ~ count/(estimate.other+estimate.multiple)*100000)
+  ) %>% filter(!is.na(race)) %>%
+  select(NAME, race, count, estimate.af.am, estimate.white, county_per_capita_shootings_per_race) 
+
+#Joining per capita dataset to largest_counties_maj_black_poor_shootings
+largest_counties_maj_black_poor_shootings_w_per_capita <- largest_counties_maj_black_poor_shootings %>%
+  left_join(county_police_shootings_by_race_w_acs) %>%
+  select(NAME, race, count, estimate.af.am, estimate.white, county_per_capita_shootings_per_race, pct_all_maj_poor_black, pct_shootings_maj_black_poor, difference_in_shootings) 
+
+#Analysis
+largest_counties_maj_black_poor_shootings_w_per_capita %>%
+  arrange(difference_in_shootings)
+  #there is a 19.34% difference in shootings in Will County with black people being shot at a rate 17.18x that of white people
+  #there is a 20.39% difference in shootings in Marion County with black people being shot at a rate 4x that of white people
+
+largest_counties_maj_black_poor_shootings_w_per_capita %>%
+  arrange(desc(county_per_capita_shootings_per_race))
+  #Oklahoma County has the highest rate of per capita shootings for Black people, which is 5.52x that of white people
+  #Jackson County has the second highest rate of per capita shootings for Black people, which is 5.52x that of white people
+  #Franklin County has the third highest rate of per capita shootings for Black people, which is 6.18x that of white people
+  #LA has the fifth highest rate of per capita shootings for Black people, which is 4.43x that of white people
 
 ```
 
