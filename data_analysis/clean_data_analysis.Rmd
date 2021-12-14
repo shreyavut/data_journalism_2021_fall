@@ -40,7 +40,7 @@ census_api_key("82c33dd2db316b78367d3476bcb90d2abe65a69a", install = "TRUE", ove
 variables <- load_variables("acs5", year=2019)
 ```
 
-CLEANING DATA: We created a for loop to reverse geocode the shootings based on latitude and longitude. The for loop is in the attached file called batch_job.r, Below are the new databases. One is grouped by census tract, and tells us whether or not there was a shooting in a census tract. The other tells us each individual shooting. 
+CLEANING DATA: We created a for loop to reverse geocode the shootings based on latitude and longitude. The for loop is in the attached file in the data_analysis folder called batch_job.r, Below are the new databases. One is grouped by census tract, and tells us whether or not there was a shooting in a census tract. The other tells us each individual shooting. 
 ``` {r}
 
 ### loading the files from batch_job.r 
